@@ -37,16 +37,16 @@ medicos <-
 ######## Baixar dados
 
 # guardar url do arquivo
-if (!file.exists("inst/extdata/areas_ubs")) {
+if (!file.exists("inst/extdata/ubs_sp_areas")) {
   tmp <- tempfile(fileext = ".zip")
   download.file('https://dataverse.harvard.edu/api/access/datafile/3092976', tmp, quiet = TRUE)
-  unzip(tmp, exdir = "inst/extdata/areas_ubs")
+  unzip(tmp, exdir = "inst/extdata/ubs_sp_areas")
   unlink(tmp)
 }
 
 # Importar arquivo no R
-areas_ubs <-
-  read_sf(dsn="inst/extdata/areas_ubs", layer="AA_UBS_MSP_2015_2016_UTM_SIRGAS2000_fuso23S",
+ubs_sp_areas <-
+  read_sf(dsn="inst/extdata/ubs_sp_areas", layer="AA_UBS_MSP_2015_2016_UTM_SIRGAS2000_fuso23S",
           stringsAsFactors = FALSE) %>%
   st_transform(31983) %>%
   st_make_valid() %>%
@@ -57,6 +57,48 @@ areas_ubs <-
 
 
 # Guardar para uso do pacote
-devtools::use_data(areas_ubs)
+devtools::use_data(ubs_sp_areas)
 
 rm(list=ls())
+
+
+###### Dados de UBS ------------
+
+load("data-raw/base_ubs.rda")
+
+ubs_sp <-
+  base_ubs %>%
+  st_as_sf() %>%
+  st_transform(31983) %>%
+  st_make_valid() %>%
+  select(-.id) %>%
+  rename(cnes = CNES) %>%
+  merge(select(as.data.frame(areas_ubs), -geometry), by = "cnes") %>%
+  mutate(sts = as.factor(sts),
+         crs = as.factor(crs))
+
+str(ubs_sp)
+
+
+setores_areas_ubs <-
+  ubs_sp_areas %>% select(cnes) %>%
+  st_join(select(centroides_sp, cd_geocodi), join = st_intersects) %>%
+  as.data.frame() %>%
+  select(cd_geocodi, cnes)
+
+setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% setores_areas_ubs$cd_geocodi)]
+cnes <- c("3121135", "4049934", "2788039", "2788217", "2788500") # levantado manualmente
+
+setores_areas_ubs <-
+  setores_areas_ubs %>%
+  bind_rows(data.frame(CNES=cnes,
+                       CD_GEOCODI=setores))
+
+
+
+
+devtools::use_data(ubs_sp)
+
+rm(list=ls())
+
+

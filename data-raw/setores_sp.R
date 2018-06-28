@@ -69,7 +69,15 @@ setores_sp <-
          dens_demografica = pessoas_setor / area,
          nm_distrit = iconv(nm_distrit, from = "UTF-8", to = "ASCII//TRANSLIT"))
 
+#### Criar centroides
+
+centroides_sp <-
+  setores_sp %>%
+  st_centroid() %>%
+  select(cd_geocodi)
+
 # Guardar para uso no pacote
 devtools::use_data(setores_sp)
+devtools::use_data(centroides_sp)
 
 rm(list=ls())

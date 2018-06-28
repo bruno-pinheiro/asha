@@ -32,10 +32,6 @@
 #'
 #' @import dplyr ggplot2 sf
 #'
-#' @importFrom rlang sym
-#'
-#' @importFrom scales percent
-#'
 #' @export
 barUniCat <- function(df, x) {
   x <- rlang::sym(x)
@@ -50,13 +46,14 @@ barUniCat <- function(df, x) {
     as.numeric()
 
   df %>%
+    as.data.frame() %>%
     filter(!is.na(!!x)) %>%
     count(!!x) %>%
     mutate(prop = prop.table(n)) %>%
     ggplot(aes(y=prop, x=!!x)) +
     geom_bar(stat = "identity") +
     scale_y_continuous(labels = scales::percent, limits = c(0, maxProp)) +
-    geom_text(aes(label = percent(round(prop, 3))), hjust=-.1) +
+    geom_text(aes(label = scales::percent(round(prop, 3))), hjust=-.1) +
     labs(title=paste0("Distribuicao de proporcoes para ", colnames(select(df, !!x))),
          x = NULL, y = NULL) +
     theme_bw() +
@@ -91,15 +88,13 @@ barUniCat <- function(df, x) {
 #' data("setores_sp")
 #' histUni(as.data.frame(setores_sp), "pessoas_setor")
 #'
-#' @import dplyr ggplot2 sf
-#'
-#' @importFrom rlang sym
+#' @import ggplot2
 #'
 #' @export
 histUni <- function(df, x) {
   x <- rlang::sym(x)
 
-  ggplot(df, aes(x=!!x)) +
+  ggplot(as.data.frame(df), aes(x=!!x)) +
     geom_histogram(col="black",fill="lightblue") +
     labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
          x = NULL) +

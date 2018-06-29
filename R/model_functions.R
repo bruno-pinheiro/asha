@@ -39,10 +39,10 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
     select(id1, id2)
 }
 
-# Funcao asha_nearest ###########################
+# Funcao asha_nn ###########################
 
 #' @title Encontrar os n pontos mais proximos
-#' @name asha_nearest
+#' @name asha_nn
 #'
 #' @description A funcao busca e encontra o n pontos mais proximos
 #'              entre dois datasets sf.
@@ -50,16 +50,16 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' @param sf1 Um objeto sf com geometria de pontos representando o destino
 #' @param sf2 Um objeto sf com geometria de pontos representando a origem
 #' @param id1 Codigo de identificacao do ponto de destino
-#' @param id2 Codigo de identificao da ponto de origem
+#' @param id2 Codigo de identificao do ponto de origem
 #' @param n Numero de pontos mais proximo
 #'
 #' @details A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
 #'          pontos de \code{sf1} mais proximos de \code{sf2}. Usa a funcao nabor::knn
-#'          para construir a matriz de distancia, filtra os \code{n} pontos e atribui
-#'          codigos de identificacao.
+#'          para construir a matriz de distancia, filtra os \code{n} pontos e atribui os
+#'          codigos de identificacao do destino e da origem.
 #'
-#' @return Retorna um data frame com as colunas \code{id_1} (destino) e \code{id_2} (origem),
-#'         alem de uma coluna para cada \code{n} distancia.
+#' @return Retorna um data frame com as colunas \code{de} (origem) e \code{para} (destino),
+#'         \code{proximidade} (distancia $n_i$) e \code{distancia}.
 #'
 #' @author Bruno Pinheiro
 #'
@@ -68,28 +68,35 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' @examples
 #' data("ubs_sp")
 #' data("centroides_sp")
-#' asha_nearest(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
+#' asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
 #'
 #' @import sf dplyr
 #'
 #' @export
-asha_nearest <- function(sf1, sf2, id1, id2, n) {
+asha_nn <- function(sf1, sf2, id1, id2, n) {
   id1 <- rlang::sym(id1)
   id2 <- rlang::sym(id2)
-  id_1 <- NULL
-  id_2 <- NULL
-  value <- NULL
-  variable <- NULL
-  . <- NULL
+  nn.dists.Var1 <- NULL
+  nn.dists.Var2 <- NULL
+  nn.idx.value <- NULL
+  nn.dists.value <- NULL
+  de <- NULL
+  para <- NULL
+  proximidade <- NULL
+  distancia <- NULL
+
 
   df <- list(coords1 = st_coordinates(sf1), coords2 = st_coordinates(sf2))
   df <- nabor::knn(data = df[[1]], query = df[[2]], k = n)
+  df <- reshape2::melt(df)
   df <-
-    data.frame(id_2 = pull(select(as.data.frame(sf2), !!id2)),
-                   as.data.frame(df[[1]]),
-                   as.data.frame(df[2])) %>%
-    reshape2::melt(id.vars = c("id_2", colnames(.[(n + 2):ncol(.)]))) %>%
-    rename(proximidade = variable, id_1 = value) %>%
-    mutate(id_1 = pull(as.data.frame(sf1), !!id1)[id_1])
+    as.data.frame(split(df, df$L1)) %>%
+    rename(de = nn.dists.Var1,
+           para = nn.idx.value,
+           proximidade = nn.dists.Var2,
+           distancia = nn.dists.value) %>%
+    mutate(de = pull(as.data.frame(sf2), !!id2)[de],
+           para = pull(as.data.frame(sf1), !!id1)[para]) %>%
+    select(de, para, proximidade, distancia)
   return(df)
 }

@@ -73,14 +73,32 @@ ubs_sp <-
   st_make_valid() %>%
   select(-.id) %>%
   rename(cnes = CNES) %>%
-  merge(select(as.data.frame(areas_ubs), -geometry), by = "cnes") %>%
+  st_join(select(ubs_sp_areas, -cnes)) %>%
   mutate(sts = as.factor(sts),
          crs = as.factor(crs))
 
-str(ubs_sp)
+
+##### Identificar relacoes entre UBS e setores censitarios
+
+###### UBSs associadas aos setores no modelo vigente
 
 
-setores_areas_ubs <-
+modelo_vigente <-
+  ubs_sp_areas %>% select(cnes) %>%
+  st_join(select(centroides_sp, cd_geocodi), join = st_intersects) %>%
+  as.data.frame() %>%
+  select(cd_geocodi, cnes)
+
+setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% modelo_vigente$cd_geocodi)]
+cnes <- c("3121135", "4049934", "2788039", "2788217", "2788500") # levantado manualmente
+
+modelo_vigente <-
+  modelo_vigente %>%
+  bind_rows(data.frame(cnes = cnes,
+                       cd_geocodi = setores))
+
+
+modelo_vigente <-
   ubs_sp_areas %>% select(cnes) %>%
   st_join(select(centroides_sp, cd_geocodi), join = st_intersects) %>%
   as.data.frame() %>%
@@ -89,16 +107,44 @@ setores_areas_ubs <-
 setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% setores_areas_ubs$cd_geocodi)]
 cnes <- c("3121135", "4049934", "2788039", "2788217", "2788500") # levantado manualmente
 
-setores_areas_ubs <-
-  setores_areas_ubs %>%
-  bind_rows(data.frame(CNES=cnes,
-                       CD_GEOCODI=setores))
+modelo_vigente <-
+  modelo_vigente %>%
+  bind_rows(data.frame(cnes = cnes,
+                       cd_geocodi = setores))
 
+###### UBSs associadas aos setores no modelo de proximidade
 
+ubs_proxima_setores <-
+  st_distance(centroides_sp, base_ubs, longlat=F)
+
+ubs_prox5 <-
+  data.frame(t(apply(ubs_proxima_setores, 1, order)[ 1:10, ])) %>%
+  bind_cols(data.frame(t(apply(ubs_proxima_setores, 1, sort)[ 1:10, ]))) %>%
+  bind_cols(CD_GEOCODI=centroides_capital$CD_GEOCODI)
+
+ubs_prox5 <-
+  melt(ubs_prox5[, c(1:10, 21)], id="CD_GEOCODI") %>%
+  bind_cols(melt(ubs_prox5[, c(11:21)], id="CD_GEOCODI")) %>%
+  rename(Proximidade=variable, Distancia=value1) %>%
+  mutate(CNES=base_ubs$CNES[value],
+         Metros=round(Distancia)) %>%
+  select(CD_GEOCODI, CNES, Metros, Proximidade)
+
+ubs_prox5$Proximidade  <- gsub("X1", "1", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X2", "2", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X3", "3", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X4", "4", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X5", "5", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X6", "6", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X7", "7", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X8", "8", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X9", "9", ubs_prox5$Proximidade)
+ubs_prox5$Proximidade  <- gsub("X10", "10", ubs_prox5$Proximidade)
+
+glimpse(setores_areas_ubs)
 
 
 devtools::use_data(ubs_sp)
 
 rm(list=ls())
-
 

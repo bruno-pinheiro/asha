@@ -3,7 +3,7 @@
 \docType{data}
 \name{setores_sp}
 \alias{setores_sp}
-\title{Poligonos de setores censitarios da cidade de Sao Paulo}
+\title{Setores censitarios da cidade de Sao Paulo}
 \format{Um dataset classe sf com os poligonos dos setores censitarios,
     contendo 18953 linhas e 6 variaveis:
 \describe{

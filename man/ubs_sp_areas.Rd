@@ -3,9 +3,10 @@
 \docType{data}
 \name{ubs_sp_areas}
 \alias{ubs_sp_areas}
-\title{Poligonos das areas de cobertura das UBS da cidade de Sao Paulo}
+\title{Areas de cobertura das UBS da cidade de Sao Paulo}
 \format{Um dataset classe sf com os poligonos dos setores censitarios,
     contendo 456 linhas e 8 variaveis:
+
 \describe{
   \item{cnes}{Codigo de identificacao da UBS}
   \item{nomeubs}{Nome da UBS}

@@ -3,7 +3,7 @@
 \docType{data}
 \name{ubs_sp}
 \alias{ubs_sp}
-\title{Pontos de localizacaoo das UBS da cidade de Sao Paulo}
+\title{Localizacao das UBS da cidade de Sao Paulo}
 \format{Um dataset classe sf com os poligonos dos setores censitarios,
     contendo 456 linhas e 8 variaveis:
 \describe{

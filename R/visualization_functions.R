@@ -1,7 +1,7 @@
 # Barplot uma variavel categorica ###########################
 
 #' @title Grafico de barras para uma variavel categorica
-#' @name barUniCat
+#' @name asha_bar
 #'
 #' @description Uma funcao que pega uma variavel categorica, contabiliza suas classes
 #'     e plota um grafico de barras formatado. O grafico sera plotado com coord_flip()
@@ -23,17 +23,17 @@
 #'
 #' @examples
 #' data("setores_sp")
-#' barUniCat(as.data.frame(setores_sp), "tipo")
+#' asha_bar(as.data.frame(setores_sp), "tipo")
 #' # Com mais de uma variavel
 #' library(dplyr)
 #' setores_sp$pm <- as.factor(setores_sp$pessoas_setor > mean(setores_sp$pessoas_setor, na.rm = TRUE))
 #' vars <- c("tipo", "pm")
-#' plots <- lapply(vars, function(i) barUniCat(as.data.frame(setores_sp), i))
+#' plots <- lapply(vars, function(i) asha_bar(as.data.frame(setores_sp), i))
 #'
 #' @import dplyr ggplot2 sf
 #'
 #' @export
-barUniCat <- function(df, x) {
+asha_bar <- function(df, x) {
   x <- rlang::sym(x)
   prop <- NULL
 
@@ -65,7 +65,7 @@ barUniCat <- function(df, x) {
 # Histograma univariado ###########################
 
 #' @title Histograma para uma variavel numerica
-#' @name histUni
+#' @name asha_hist
 #'
 #' @description Uma funcao que pega uma variavel numerica e plota
 #'     um histograma. O grafico sera plotado ja formatado, com titulo
@@ -86,12 +86,12 @@ barUniCat <- function(df, x) {
 #'
 #' @examples
 #' data("setores_sp")
-#' histUni(as.data.frame(setores_sp), "pessoas_setor")
+#' asha_hist(as.data.frame(setores_sp), "pessoas_setor")
 #'
 #' @import ggplot2
 #'
 #' @export
-histUni <- function(df, x) {
+asha_hist <- function(df, x) {
   x <- rlang::sym(x)
 
   ggplot(as.data.frame(df), aes(x=!!x)) +

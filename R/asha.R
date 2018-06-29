@@ -10,12 +10,12 @@
 #'
 #' @examples
 #' # plotar variavel numerica
-#' histUni(ubs_sp_areas, "total_enf")
+#' asha_hist(ubs_sp_areas, "total_enf")
 #' # plotar variavel categorica
-#' barUniCat(as.data.frame(setores_sp), "tipo")
+#' asha_bar(as.data.frame(setores_sp), "tipo")
 #'
 #' @section Outras informacoes:
-#' Veja mais em \link{barUniCat}, \link{histUni}
+#' Veja mais em \link{asha_bar}, \link{asha_hist}
 #'
 #' @docType package
 #' @name asha

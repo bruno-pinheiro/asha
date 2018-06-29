@@ -5,15 +5,29 @@
 \alias{rotas}
 \title{Distacias e tempos de viagem a pe ate as UBS}
 \format{Um dataset classe sf com os poligonos dos setores censitarios,
-    contendo 94765 linhas e 11 variaveis:}
+    contendo 94765 linhas e 11 variaveis:
+
+\describe{
+  \item{cd_geocodi}{Codigo de identificacao do setor censitario}
+  \item{cnes}{Codigo de identificacao da UBS}
+  \item{ox}{Latitude da origem}
+  \item{oy}{Longitude da origem}
+  \item{dx}{Latitude do destino}
+  \item{dy}{Longitude do destino}
+  \item{origem}{Endereco de origem}
+  \item{destino}{Endereco de destino}
+  \item{metros_pe}{Distancia de caminhada em metros}
+  \item{segundos_pe}{Tempo de caminhada em segundos}
+  \item{minutos_pe}{Tempo de caminhada em minutos}
+}}
 \usage{
 rotas
 }
 \description{
 O dataset foi a partir de consulta à Google Distance Matrix API por meio
-da função dist_google do pacote stplanr e contem
-as distancias e tempos de viagem entre os centroides dos setores censitarios
-da cidade de Sao Paulo e as 5 UBS mais proximas de cada um
+da função dist_google do pacote stplanr e contem as distancias e tempos de
+viagem entre os centroides dos setores censitarios da cidade de Sao Paulo e
+as 5 UBS mais proximas de cada um.
 }
 \seealso{
 \code{\link[stplanr]{dist_google}}

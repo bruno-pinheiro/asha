@@ -3,7 +3,7 @@
 \docType{data}
 \name{centroides_sp}
 \alias{centroides_sp}
-\title{Pontos de localizacao dos centroides dos setores censitarios da cidade de Sao Paulo}
+\title{Centroides dos setores censitarios da cidade de Sao Paulo}
 \format{Um dataset classe sf com os centroides dos setores censitarios,
     contendo 18953 linhas e 1 variavel
 \describe{

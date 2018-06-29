@@ -1,7 +1,7 @@
 #' @importFrom tibble tibble
 NULL
 
-#' Poligonos de setores censitarios da cidade de Sao Paulo
+#' Setores censitarios da cidade de Sao Paulo
 #'
 #' O dataset foi estruturado a partir de dados do Censo 2010 disponibilidos
 #' pelo IBGE (malha de setores censitarios do estado de Sao Paulo) e resultados
@@ -22,7 +22,7 @@ NULL
 #' }
 "setores_sp"
 
-#' Pontos de localizacao dos centroides dos setores censitarios da cidade de Sao Paulo
+#' Centroides dos setores censitarios da cidade de Sao Paulo
 #'
 #' Criado com a funcao st_centroid a partir do dataset \link{setores_sp}.
 #'
@@ -33,7 +33,7 @@ NULL
 #' }
 "centroides_sp"
 
-#' Pontos de localizacaoo das UBS da cidade de Sao Paulo
+#' Localizacao das UBS da cidade de Sao Paulo
 #'
 #' Traz as mesmas variaveis da base ubs_sp_areas, porem para os pontos de
 #' localizacao das UBS e nao os poligonos das respectivas areas. As UBS sao
@@ -54,7 +54,7 @@ NULL
 #' }
 "ubs_sp"
 
-#' Poligonos das areas de cobertura das UBS da cidade de Sao Paulo
+#' Areas de cobertura das UBS da cidade de Sao Paulo
 #'
 #' O dataset foi obtido da Secretaria Municipal de Saude por meio
 #' de pedido de acesso a informacao. Traz os polígnos dos territórios
@@ -64,6 +64,7 @@ NULL
 #'
 #' @format Um dataset classe sf com os poligonos dos setores censitarios,
 #'     contendo 456 linhas e 8 variaveis:
+#'
 #' \describe{
 #'   \item{cnes}{Codigo de identificacao da UBS}
 #'   \item{nomeubs}{Nome da UBS}
@@ -79,14 +80,13 @@ NULL
 #' Distacias e tempos de viagem a pe ate as UBS
 #'
 #' O dataset foi a partir de consulta à Google Distance Matrix API por meio
-#' da função dist_google do pacote stplanr e contem
-#' as distancias e tempos de viagem entre os centroides dos setores censitarios
-#' da cidade de Sao Paulo e as 5 UBS mais proximas de cada um
+#' da função dist_google do pacote stplanr e contem as distancias e tempos de
+#' viagem entre os centroides dos setores censitarios da cidade de Sao Paulo e
+#' as 5 UBS mais proximas de cada um.
 #'
 #' @format Um dataset classe sf com os poligonos dos setores censitarios,
 #'     contendo 94765 linhas e 11 variaveis:
 #'
-#' @section Variaveis
 #' \describe{
 #'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
 #'   \item{cnes}{Codigo de identificacao da UBS}

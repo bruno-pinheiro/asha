@@ -3,6 +3,7 @@
 export(asha_bar)
 export(asha_hist)
 export(asha_intersect)
+export(asha_nearest)
 import(dplyr)
 import(ggplot2)
 import(sf)

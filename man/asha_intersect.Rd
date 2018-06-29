@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_functions.R
 \name{asha_intersect}
 \alias{asha_intersect}
-\title{Interseccao de pontos de origem com areas de saude}
+\title{Interseccao de pontos de origem em areas de saude}
 \usage{
 asha_intersect(sf1, sf2, id1, id2)
 }
@@ -34,9 +34,10 @@ data("centroides_sp")
 asha_intersect(ubs_sp_areas, centroides_sp, "cnes", "cd_geocodi")
 
 }
+\seealso{
+\code{\link[sf]{st_intersects}},
+         \code{\link[sf]{st_join}}
+}
 \author{
 Bruno Pinheiro
-
-#' @seealso \code{\link[sf]{st_intersects}},
-         \code{\link[sf]{st_join}}
 }

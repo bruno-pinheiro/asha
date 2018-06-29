@@ -58,8 +58,8 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #'          para construir a matriz de distancia, filtra os \code{n} pontos e atribui os
 #'          codigos de identificacao do destino e da origem.
 #'
-#' @return Retorna um data frame com as colunas \code{de} (origem) e \code{para} (destino),
-#'         \code{proximidade} (distancia $n_i$) e \code{distancia}.
+#' @return Retorna um data frame com as colunas \code{id2} (codigo de origem),
+#'         \code{id1} (codigo de destino), \code{proximidade} e \code{distancia}.
 #'
 #' @author Bruno Pinheiro
 #'
@@ -91,12 +91,12 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
   df <- reshape2::melt(df)
   df <-
     as.data.frame(split(df, df$L1)) %>%
-    rename(de = nn.dists.Var1,
-           para = nn.idx.value,
+    rename(!!id2 := nn.dists.Var1,
+           !!id1 := nn.idx.value,
            proximidade = nn.dists.Var2,
            distancia = nn.dists.value) %>%
-    mutate(de = pull(as.data.frame(sf2), !!id2)[de],
-           para = pull(as.data.frame(sf1), !!id1)[para]) %>%
-    select(de, para, proximidade, distancia)
+    mutate(!!id2 := pull(as.data.frame(sf2), !!id2)[!!id2],
+           !!id1 := pull(as.data.frame(sf1), !!id1)[!!id1]) %>%
+    select(!!id2, !!id1, proximidade, distancia)
   return(df)
 }

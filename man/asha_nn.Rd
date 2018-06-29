@@ -18,8 +18,8 @@ asha_nn(sf1, sf2, id1, id2, n)
 \item{n}{Numero de pontos mais proximo}
 }
 \value{
-Retorna um data frame com as colunas \code{de} (origem) e \code{para} (destino),
-        \code{proximidade} (distancia $n_i$) e \code{distancia}.
+Retorna um data frame com as colunas \code{id2} (codigo de origem),
+        \code{id1} (codigo de destino), \code{proximidade} e \code{distancia}.
 }
 \description{
 A funcao busca e encontra o n pontos mais proximos

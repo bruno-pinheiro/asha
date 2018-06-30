@@ -104,18 +104,3 @@ NULL
 #' @seealso \code{\link[stplanr]{dist_google}}
 #'
 "rotas"
-
-#' Pontos de UBS e centroides de setores censitarios unidos
-#'
-#' O dataset reune os pontos de UBS e dos centroides dos setores
-#' censitarios. É o formato padrão do parametro \code{zones} da
-#' funcao \code{\link{asha_dists}}
-#'
-#' @format Um dataset classe sf com pontos, contendo
-#'         19409 linhas e 1 variavel:
-#'
-#' \describe{
-#'   \item{id}{Codigo de identificacao das origens e destinos}
-#' }
-#'
-"base_saude_setores"

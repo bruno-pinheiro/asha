@@ -10,6 +10,6 @@ Depends: R (>= 3.4.4)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: methods, dplyr, ggplot2, sf, tibble, nabor, stplanr
-Suggests: gridExtra, rlang, scales, reshape2
+Imports: dplyr, ggplot2, sf, tibble, nabor, stplanr, rlang
+Suggests: methods, scales, reshape2, gridExtra
 RoxygenNote: 6.0.1

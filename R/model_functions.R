@@ -70,12 +70,12 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' data("centroides_sp")
 #' asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
 #'
-#' @import sf dplyr
+#' @import sf dplyr rlang
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
-  id1 <- rlang::sym(id1)
-  id2 <- rlang::sym(id2)
+  # id1 <- rlang::sym(id1)
+  # id2 <- rlang::sym(id2)
   nn.dists.Var1 <- NULL
   nn.dists.Var2 <- NULL
   nn.idx.value <- NULL
@@ -103,43 +103,55 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 
 # Funcao asha_dists ###########################
 
-#' @title Encontrar os n pontos mais proximos
+#' @title Obter informações de distancia e tempo de viagem por modal
 #' @name asha_dists
 #'
-#' @description A funcao busca e encontra o n pontos mais proximos
-#'              entre dois datasets sf.
+#' @description Permite o levantamento de dados de rotas de viagem para
+#'              modais de transporte entre dois conjuntos de pontos espaciais
 #'
-#' @param sf1 Um objeto sf com geometria de pontos representando o destino
-#' @param sf2 Um objeto sf com geometria de pontos representando a origem
-#' @param id1 Codigo de identificacao do ponto de destino
-#' @param id2 Codigo de identificao do ponto de origem
-#' @param n Numero de pontos mais proximo
+#' @param fluxo Uma matriz ou data frame de duas colunas representando a
+#'              latitude e a longitude das origens.
+#' @param zonas Uma matriz ou data frame de duas colunas representando a
+#'              latitude e a longitude dos destinos.
+#' @param modal String especificando o modo de transporte, que pode ser bicycling (padrao),
+#'              walking, driving ou transit
+#' @param api String com API do Google Distance Matrix API
 #'
-#' @details A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
-#'          pontos de \code{sf1} mais proximos de \code{sf2}. Usa a funcao nabor::knn
-#'          para construir a matriz de distancia, filtra os \code{n} pontos e atribui os
-#'          codigos de identificacao do destino e da origem.
+#' @details Utiliza a funcao \code{\link[stplanr]{dist_google}} para consultar a
+#'          Google Matrix Distance API e pode incluir os modais caminhada,
+#'          transporte publico, bicicleta e carro. Prepara automaticamente
+#'          os dados com \code{\link[stplanr]{od2odf}} antes de realizar a consulta
+#'          e gera resultados para pares linha a linha, ao invés de todos para
+#'          todos como o pacote stplanr, reduzindo as consultas na API.
 #'
-#' @return Retorna um data frame com as colunas \code{id2} (codigo de origem),
-#'         \code{id1} (codigo de destino), \code{proximidade} e \code{distancia}.
+#' @return Retorna um data frame com colunas \code{de} (enderecos de origem),
+#'         \code{para} (endereços de destino), \code{distancias} (em metros),
+#'         \code{tempo} (em segundos), \code{moeda} e \code{tarifa}
 #'
 #' @author Bruno Pinheiro
 #'
-#' @seealso \code{\link[nabor]{knn}}
+#' @seealso \code{\link[stplanr]{dist_google}},
+#'          \code{\link[stplanr]{od2odf}}
 #'
 #' @examples
-#' data("ubs_sp")
-#' data("centroides_sp")
-#' asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
+#' modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
+#' asha_dists(modelo_proximidade[251:255, ], base_saude_setores, "transit", api = api02)
 #'
-#' @import sf stplanr
+#' @import dplyr sf stplanr
 #'
 #' @export
-asha_dists <- function(fluxo, zonas, api) {
-  zonas <- as(st_transform(zonas, 4326), "Spatial")
+asha_dists <- function(fluxo, zonas, modal, api) {
+  from_addresses = NULL
+  to_addresses = NULL
+  distances = NULL
+  duration = NULL
+  currency = NULL
+  fare = NULL
+  zonas <- methods::as(st_transform(zonas, 4326), "Spatial")
   od <- stplanr::od2odf(flow = fluxo, zones = zonas)
-  uma_linha <- data.frame(from_addresses=NA, to_addresses=NA, distances=NA,
-                      duration=NA, currency=NA, fare=NA)
+  uma_linha <- data.frame(from_addresses = NA, to_addresses = NA,
+                          distances = NA, duration = NA,
+                          currency = NA, fare = NA)
   output <- data.frame()
   for (linha in 1:nrow(od)) {
     o <- od[linha, 3:4]
@@ -147,7 +159,7 @@ asha_dists <- function(fluxo, zonas, api) {
     output <- tryCatch(
       {
         rbind(output, stplanr::dist_google(from = o, to = d,
-                                           mode = 'walking', google_api = api))
+                                           mode = modal, google_api = api))
         },
       error = function(na) {
         message(na)
@@ -155,5 +167,10 @@ asha_dists <- function(fluxo, zonas, api) {
       }
     )
   }
-  return(output)
+  return(output <-
+           output %>%
+           rename(de = from_addresses, para = to_addresses,
+           distancias = distances, tempo = duration,
+           moeda = currency, tarifa = fare))
 }
+

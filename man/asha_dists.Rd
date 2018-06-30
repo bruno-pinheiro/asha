@@ -2,9 +2,9 @@
 % Please edit documentation in R/model_functions.R
 \name{asha_dists}
 \alias{asha_dists}
-\title{Encontrar os n pontos mais proximos}
+\title{Obter informações de distancia e tempo de viagem por modal}
 \usage{
-asha_dists(fluxo, zonas, api)
+asha_dists(fluxo, zonas, modal, api)
 }
 \arguments{
 \item{fluxo}{Uma matriz ou data frame de duas colunas representando a
@@ -13,30 +13,36 @@ latitude e a longitude das origens.}
 \item{zonas}{Uma matriz ou data frame de duas colunas representando a
 latitude e a longitude dos destinos.}
 
-\item{api}{API do Google Distance Matrix API}
+\item{modal}{String especificando o modo de transporte, que pode ser bicycling (padrao),
+walking, driving ou transit}
+
+\item{api}{String com API do Google Distance Matrix API}
 }
 \value{
-Retorna um data frame com as colunas \code{id2} (codigo de origem),
-        \code{id1} (codigo de destino), \code{proximidade} e \code{distancia}.
+Retorna um data frame com colunas \code{de} (enderecos de origem),
+        \code{para} (endereços de destino), \code{distancias} (em metros),
+        \code{tempo} (em segundos), \code{moeda} e \code{tarifa}
 }
 \description{
-A funcao busca e encontra o n pontos mais proximos
-             entre dois datasets sf.
+Permite o levantamento de dados de rotas de viagem para
+             modais de transporte entre dois conjuntos de pontos espaciais
 }
 \details{
-A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
-         pontos de \code{sf1} mais proximos de \code{sf2}. Usa a funcao nabor::knn
-         para construir a matriz de distancia, filtra os \code{n} pontos e atribui os
-         codigos de identificacao do destino e da origem.
+Utiliza a funcao \code{\link[stplanr]{dist_google}} para consultar a
+         Google Matrix Distance API e pode incluir os modais caminhada,
+         transporte publico, bicicleta e carro. Prepara automaticamente
+         os dados com \code{\link[stplanr]{od2odf}} antes de realizar a consulta
+         e gera resultados para pares linha a linha, ao invés de todos para
+         todos como o pacote stplanr, reduzindo as consultas na API.
 }
 \examples{
-data("ubs_sp")
-data("centroides_sp")
-asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
+modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
+asha_dists(modelo_proximidade[251:255, ], base_saude_setores, "transit", api = api02)
 
 }
 \seealso{
-\code{\link[nabor]{knn}}
+\code{\link[stplanr]{dist_google}},
+         \code{\link[stplanr]{od2odf}}
 }
 \author{
 Bruno Pinheiro

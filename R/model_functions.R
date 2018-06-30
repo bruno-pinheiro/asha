@@ -146,21 +146,20 @@ asha_dists <- function(fluxo, zonas, api) {
   for (linha in 1:nrow(od)) {
     o <- od[linha, 3:4]
     d  <- od[linha, 5:6]
-    for (linha in 1:nrow(od)) {
-      o <- od[linha, 3:4]
-      d  <- od[linha, 5:6]
-      output <- tryCatch(
-        {
-          rbind(output, stplanr::dist_google(from = o, to = d,
+    output <- tryCatch(
+      {
+        rbind(output, stplanr::dist_google(from = o, to = d,
                                              mode = 'walking', google_api = api))
         },
-        error = function(na) {
-          message("Erro: No results for this request (e.g. due to lack of support for this mode between the from and to locations)")
-          message(na)
-          output <- rbind(output, uma_linha)
-        }
-      )
-    }
-    return(output)
+      error = function(na) {
+        message("Erro: No results for this request (e.g. due to lack of support for this mode between the from and to locations)")
+        message(na)
+        output <- rbind(output, uma_linha)
+      }
+    )
   }
+  return(output)
 }
+
+
+

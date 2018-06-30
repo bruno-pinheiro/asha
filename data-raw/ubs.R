@@ -1,30 +1,43 @@
 #### CARREGAR PACOTES ###################
 library(dplyr)
 library(spdplyr)
+library(reshape2)
 library(sf)
 library(lwgeom)
 library(rgdal)
 
 
-###### Dados de enfermeiros ------------
+#### BAIXAR DADOS -------------
 
-# Baixar dados
-download.file("https://raw.githubusercontent.com/bruno-pinheiro/Mobilidade_Desigualdades/master/data/data_raw/quant_enfermeiros_set_2017.csv", "inst/extdata/enfermeiros.csv", quiet = TRUE)
+# De enfermeiros
+if (!file.exists(system.file("extdata", "enfermeiros.csv", package = "asha"))) {
+  download.file("https://raw.githubusercontent.com/bruno-pinheiro/Mobilidade_Desigualdades/master/data/data_raw/quant_enfermeiros_set_2017.csv",
+                "inst/extdata/enfermeiros.csv")
+}
 
-# Organizar dados
+# De medicos
+if(!file.exists(system.file("extdata", "medicos.csv", package = "asha"))) {
+download.file("https://raw.githubusercontent.com/bruno-pinheiro/Mobilidade_Desigualdades/master/data/data_raw/quant_medicos_set_2017.csv",
+              "inst/extdata/medicos.csv")
+}
+
+# De areas de UBS
+if (!file.exists(system.file("extdata", "ubs_sp_areas/", package = "asha"))) {
+  tmp <- tempfile(fileext = ".zip")
+  download.file('https://dataverse.harvard.edu/api/access/datafile/3092976', tmp)
+  unzip(tmp, exdir = "inst/extdata/ubs_sp_areas")
+  unlink(tmp)
+}
+
+#### IMPORTAR DADOS -------------
+
 enfermeiros <-
   read.csv(system.file("extdata", "enfermeiros.csv", package = "asha"),
-           sep = ";", stringsAsFactors = FALSE) %>%
+           sep=";", stringsAsFactors = FALSE) %>%
   mutate(cnes = substring(ESTAB_SA, first=1, last=7)) %>%
   rename(total_enf = TOTAL_ENF) %>%
   select(-ESTAB_SA)
 
-################ Quantidade de médicos por UBS ------------------
-
-# Baixar dados
-download.file("https://raw.githubusercontent.com/bruno-pinheiro/Mobilidade_Desigualdades/master/data/data_raw/quant_medicos_set_2017.csv", "inst/extdata/medicos.csv", quiet = TRUE)
-
-# Orgnizar dados
 medicos <-
   read.csv(system.file("extdata", "medicos.csv", package = "asha"),
            sep=";", stringsAsFactors = FALSE) %>%
@@ -32,19 +45,6 @@ medicos <-
   rename(total_med = TOTAL_MED) %>%
   select(-ESTAB_SA)
 
-###### Shape de areas de cobertura das UBS ------------------
-
-######## Baixar dados
-
-# guardar url do arquivo
-if (!file.exists("inst/extdata/ubs_sp_areas")) {
-  tmp <- tempfile(fileext = ".zip")
-  download.file('https://dataverse.harvard.edu/api/access/datafile/3092976', tmp, quiet = TRUE)
-  unzip(tmp, exdir = "inst/extdata/ubs_sp_areas")
-  unlink(tmp)
-}
-
-# Importar arquivo no R
 ubs_sp_areas <-
   read_sf(dsn="inst/extdata/ubs_sp_areas", layer="AA_UBS_MSP_2015_2016_UTM_SIRGAS2000_fuso23S",
           stringsAsFactors = FALSE) %>%
@@ -52,20 +52,12 @@ ubs_sp_areas <-
   st_make_valid() %>%
   select(CNES, NOMEUBS, STS, CRS, SUBPREF) %>%
   rename_all(tolower) %>%
-  merge(medicos, by = "cnes", all.x = TRUE) %>%
-  merge(enfermeiros, by = "cnes", all.x = TRUE)
-
-
-# Guardar para uso do pacote
-devtools::use_data(ubs_sp_areas)
-
-rm(list=ls())
-
-
-###### Dados de UBS ------------
+  merge(medicos, by = "cnes", all.x = TRUE) %>% # adicionar medicos
+  merge(enfermeiros, by = "cnes", all.x = TRUE) %>% # adicionar enfermeiros
+  mutate(sts = as.factor(sts),
+         crs = as.factor(crs))
 
 load("data-raw/base_ubs.rda")
-
 ubs_sp <-
   base_ubs %>%
   st_as_sf() %>%
@@ -73,78 +65,72 @@ ubs_sp <-
   st_make_valid() %>%
   select(-.id) %>%
   rename(cnes = CNES) %>%
-  st_join(select(ubs_sp_areas, -cnes)) %>%
-  mutate(sts = as.factor(sts),
-         crs = as.factor(crs))
+  st_join(select(ubs_sp_areas, -cnes))
 
-
-##### Identificar relacoes entre UBS e setores censitarios
-
-###### UBSs associadas aos setores no modelo vigente
-
+#### IDENTIFICAR SETORES NAS AREAS DE COBERTURA -----------
 
 modelo_vigente <-
-  ubs_sp_areas %>% select(cnes) %>%
-  st_join(select(centroides_sp, cd_geocodi), join = st_intersects) %>%
-  as.data.frame() %>%
-  select(cd_geocodi, cnes)
+  asha_intersect(ubs_sp_areas, centroides_sp, "cnes", "cd_geocodi")
+
+#' O resultado tem 18948 setores, de 18953. Os cinco nao incluidos
+#' nao estao dentro de nenhuma area de ubs, por diferencas na geometria.
+#' Abaixo identico os setores ausentes e busco no mapa as UBS correspondentes
+#' para depois incluir no dataset
 
 setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% modelo_vigente$cd_geocodi)]
 cnes <- c("3121135", "4049934", "2788039", "2788217", "2788500") # levantado manualmente
 
 modelo_vigente <-
   modelo_vigente %>%
-  bind_rows(data.frame(cnes = cnes,
-                       cd_geocodi = setores))
+  rbind(data.frame(cd_geocodi = setores,
+                   cnes = cnes))
 
+#### IDENTIFICAR AS n UBS MAIS PROXIMAS DOS SETORES -----------
 
-modelo_vigente <-
-  ubs_sp_areas %>% select(cnes) %>%
-  st_join(select(centroides_sp, cd_geocodi), join = st_intersects) %>%
-  as.data.frame() %>%
-  select(cd_geocodi, cnes)
+modelo_proximidade <-
+  asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 5)
 
-setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% setores_areas_ubs$cd_geocodi)]
-cnes <- c("3121135", "4049934", "2788039", "2788217", "2788500") # levantado manualmente
+#### INCLUIR VARIAVEIS DE UBS DOS MODELOS NO SETORES CENSITARIOS -----------
 
-modelo_vigente <-
-  modelo_vigente %>%
-  bind_rows(data.frame(cnes = cnes,
-                       cd_geocodi = setores))
+setores_sp <-
+  setores_sp %>%
+  merge(modelo_vigente, by = "cd_geocodi") %>%
+  rename(ubs_vigente = cnes) %>%
+  merge(select(filter(modelo_proximidade, proximidade == 1), cnes, cd_geocodi),
+               by="cd_geocodi") %>%
+  rename(ubs_prox = cnes)
 
-###### UBSs associadas aos setores no modelo de proximidade
+rm(modelo_vigente, modelo_proximidade,
+   medicos, enfermeiros)
 
-ubs_proxima_setores <-
-  st_distance(centroides_sp, base_ubs, longlat=F)
+#### BASE UNICA DE PONTOS DE UBS E CENTROIDES DE SETORES -------------
 
-ubs_prox5 <-
-  data.frame(t(apply(ubs_proxima_setores, 1, order)[ 1:10, ])) %>%
-  bind_cols(data.frame(t(apply(ubs_proxima_setores, 1, sort)[ 1:10, ]))) %>%
-  bind_cols(CD_GEOCODI=centroides_capital$CD_GEOCODI)
+# criar base simples de ubs
+ubs_ids <-
+  ubs_sp %>%
+  select(cnes) %>%
+  rename(id = cnes) %>%
+  mutate(tipo = "UBS")
 
-ubs_prox5 <-
-  melt(ubs_prox5[, c(1:10, 21)], id="CD_GEOCODI") %>%
-  bind_cols(melt(ubs_prox5[, c(11:21)], id="CD_GEOCODI")) %>%
-  rename(Proximidade=variable, Distancia=value1) %>%
-  mutate(CNES=base_ubs$CNES[value],
-         Metros=round(Distancia)) %>%
-  select(CD_GEOCODI, CNES, Metros, Proximidade)
+# criar base simples de centroides
+centroides_ids <-
+  centroides_sp %>%
+  select(cd_geocodi) %>%
+  rename(id = cd_geocodi) %>%
+  mutate(tipo = "centroide")
 
-ubs_prox5$Proximidade  <- gsub("X1", "1", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X2", "2", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X3", "3", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X4", "4", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X5", "5", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X6", "6", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X7", "7", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X8", "8", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X9", "9", ubs_prox5$Proximidade)
-ubs_prox5$Proximidade  <- gsub("X10", "10", ubs_prox5$Proximidade)
+# Unir os pontos de centroides e ubs num so objeto
+base_saude_setores <-
+  rbind(centroides_ids, ubs_ids)
 
-glimpse(setores_areas_ubs)
+rm(centroides_ids, ubs_ids)
 
-
-devtools::use_data(ubs_sp)
+]]
+# Guardar para uso no pacote
+devtools::use_data(ubs_sp_areas, overwrite = T)
+devtools::use_data(ubs_sp, overwrite = T)
+devtools::use_data(setores_sp, overwrite = T)
+devtools::use_data(base_saude_setores)
 
 rm(list=ls())
 

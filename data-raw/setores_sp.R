@@ -17,17 +17,13 @@ options(scipen = 999)
 if (!file.exists("inst/extdata/sp_resultados_universo")) {
   tmp <- tempfile(fileext = ".zip")
   download.file("ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_sp_20180416.zip", tmp, quiet = TRUE)
-  unzip(tmp, exdir = "inst/extdata/sp_resultados_universo", junkpaths=T)
+  unzip(tmp, exdir = "inst/extdata/sp_resultados_universo")
   unlink(tmp)
 }
 
-###################################################################
-#
-# ANTES DE CONTINUAR EU MOVI MANUALMENTE OS ARQUIVOS
-# Domicilio02_SP1.csv e DomicilioRenda_SP1.csv PARA
-# O DIRETORIO data-raw/sp_resultados_universo/
-#
-###################################################################
+#' ANTES DE CONTINUAR EU MOVI MANUALMENTE OS ARQUIVOS
+#' Domicilio02_SP1.csv e DomicilioRenda_SP1.csv PARA
+#' O DIRETORIO data-raw/sp_resultados_universo/
 
 ####### Importar no R --------
 

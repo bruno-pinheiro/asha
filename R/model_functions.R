@@ -74,8 +74,8 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
-  # id1 <- rlang::sym(id1)
-  # id2 <- rlang::sym(id2)
+  id1 <- rlang::sym(id1)
+  id2 <- rlang::sym(id2)
   nn.dists.Var1 <- NULL
   nn.dists.Var2 <- NULL
   nn.idx.value <- NULL
@@ -84,6 +84,7 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
   para <- NULL
   proximidade <- NULL
   distancia <- NULL
+
 
   df <- list(coords1 = st_coordinates(sf1), coords2 = st_coordinates(sf2))
   df <- nabor::knn(data = df[[1]], query = df[[2]], k = n)
@@ -108,11 +109,11 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #' @description A funcao busca e encontra o n pontos mais proximos
 #'              entre dois datasets sf.
 #'
-#' @param fluxo Uma matriz ou data frame de duas colunas representando a
-#'              latitude e a longitude das origens.
-#' @param zonas Uma matriz ou data frame de duas colunas representando a
-#'              latitude e a longitude dos destinos.
-#' @param api API do Google Distance Matrix API
+#' @param sf1 Um objeto sf com geometria de pontos representando o destino
+#' @param sf2 Um objeto sf com geometria de pontos representando a origem
+#' @param id1 Codigo de identificacao do ponto de destino
+#' @param id2 Codigo de identificao do ponto de origem
+#' @param n Numero de pontos mais proximo
 #'
 #' @details A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
 #'          pontos de \code{sf1} mais proximos de \code{sf2}. Usa a funcao nabor::knn
@@ -132,27 +133,23 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #' asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
 #'
 #' @import sf stplanr
-#' @importFrom methods as
 #'
 #' @export
 asha_dists <- function(fluxo, zonas, api) {
   zonas <- as(st_transform(zonas, 4326), "Spatial")
-
   od <- stplanr::od2odf(flow = fluxo, zones = zonas)
   uma_linha <- data.frame(from_addresses=NA, to_addresses=NA, distances=NA,
                       duration=NA, currency=NA, fare=NA)
   output <- data.frame()
-
   for (linha in 1:nrow(od)) {
     o <- od[linha, 3:4]
     d  <- od[linha, 5:6]
     output <- tryCatch(
       {
         rbind(output, stplanr::dist_google(from = o, to = d,
-                                             mode = 'walking', google_api = api))
+                                           mode = 'walking', google_api = api))
         },
       error = function(na) {
-        message("Erro: No results for this request (e.g. due to lack of support for this mode between the from and to locations)")
         message(na)
         output <- rbind(output, uma_linha)
       }
@@ -160,6 +157,3 @@ asha_dists <- function(fluxo, zonas, api) {
   }
   return(output)
 }
-
-
-

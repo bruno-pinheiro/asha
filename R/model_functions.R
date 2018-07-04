@@ -70,7 +70,8 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' data("centroides_sp")
 #' asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
 #'
-#' @import sf dplyr rlang
+#' @import sf dplyr
+#' @importFrom rlang :=
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
@@ -137,7 +138,7 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #' modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
 #' asha_dists(modelo_proximidade[251:255, ], zonas, "transit", api = api02)
 #'
-#' @import dplyr sf stplanr
+#' @import dplyr sf
 #'
 #' @export
 asha_dists <- function(fluxo, zonas, modal = "walking", api) {

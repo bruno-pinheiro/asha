@@ -1,6 +1,3 @@
-#' @importFrom tibble tibble
-NULL
-
 #' Setores censitarios da cidade de Sao Paulo
 #'
 #' O dataset foi estruturado a partir de dados do Censo 2010 disponibilidos

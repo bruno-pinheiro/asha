@@ -2,9 +2,9 @@
 % Please edit documentation in R/model_functions.R
 \name{asha_dists}
 \alias{asha_dists}
-\title{Obter informações de distancia e tempo de viagem por modal}
+\title{Obter informacões de distancia e tempo de viagem por modal}
 \usage{
-asha_dists(fluxo, zonas, modal, api)
+asha_dists(fluxo, zonas, modal = "walking", api)
 }
 \arguments{
 \item{fluxo}{Uma matriz ou data frame de duas colunas representando a
@@ -20,7 +20,7 @@ walking, driving ou transit}
 }
 \value{
 Retorna um data frame com colunas \code{de} (enderecos de origem),
-        \code{para} (endereços de destino), \code{distancias} (em metros),
+        \code{para} (enderecos de destino), \code{distancias} (em metros),
         \code{tempo} (em segundos), \code{moeda} e \code{tarifa}
 }
 \description{
@@ -28,16 +28,16 @@ Permite o levantamento de dados de rotas de viagem para
              modais de transporte entre dois conjuntos de pontos espaciais
 }
 \details{
-Utiliza a funcao \code{\link[stplanr]{dist_google}} para consultar a
-         Google Matrix Distance API e pode incluir os modais caminhada,
-         transporte publico, bicicleta e carro. Prepara automaticamente
-         os dados com \code{\link[stplanr]{od2odf}} antes de realizar a consulta
-         e gera resultados para pares linha a linha, ao invés de todos para
-         todos como o pacote stplanr, reduzindo as consultas na API.
+Converte o CRS do objeto passado em \code{zonas} em lat long (4326) para
+         consultar a Google Matrix Distance API com funcao \code{\link[stplanr]{dist_google}}.
+         A consulta pode ser feita para os modais caminhada, transporte publico,
+         bicicleta e carro. Prepara automaticamente os objeto OD com
+         \code{\link[stplanr]{od2odf}} e gera resultados para pares linha a linha,
+         ao inves de todos para todos como o pacote stplanr, reduzindo o consumo da API.
 }
 \examples{
 modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
-asha_dists(modelo_proximidade[251:255, ], base_saude_setores, "transit", api = api02)
+asha_dists(modelo_proximidade[251:255, ], zonas, "transit", api = api02)
 
 }
 \seealso{

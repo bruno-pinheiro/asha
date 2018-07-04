@@ -8,18 +8,18 @@ library(data.table)
 
 #### BAIXAR E PREPARAR BASES BRUTAS ################
 
-options(scipen = 999)
+# options(scipen = 999)
 
 ###### Dados do Censo de 2010 agregados por setor censitario ------------
 
 ######## Baixar dados -------------
 
-if (!file.exists("inst/extdata/sp_resultados_universo")) {
-  tmp <- tempfile(fileext = ".zip")
-  download.file("ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_sp_20180416.zip", tmp, quiet = TRUE)
-  unzip(tmp, exdir = "inst/extdata/sp_resultados_universo")
-  unlink(tmp)
-}
+# if (!file.exists("inst/extdata/sp_resultados_universo")) {
+#   tmp <- tempfile(fileext = ".zip")
+#   download.file("ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_sp_20180416.zip", tmp, quiet = TRUE)
+#   unzip(tmp, exdir = "inst/extdata/sp_resultados_universo")
+#   unlink(tmp)
+# }
 
 #' ANTES DE CONTINUAR EU MOVI MANUALMENTE OS ARQUIVOS
 #' Domicilio02_SP1.csv e DomicilioRenda_SP1.csv PARA
@@ -67,13 +67,14 @@ setores_sp <-
 
 #### Criar centroides
 
-centroides_sp <-
-  setores_sp %>%
-  st_centroid() %>%
-  select(cd_geocodi)
+# centroides_sp <-
+#   setores_sp %>%
+#   st_centroid() %>%
+#   select(cd_geocodi)
 
 # Guardar para uso no pacote
-devtools::use_data(setores_sp)
-devtools::use_data(centroides_sp)
+devtools::use_data(setores_sp, overwrite = TRUE)
+
+# devtools::use_data(centroides_sp)
 
 rm(list=ls())

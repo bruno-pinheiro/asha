@@ -1,0 +1,583 @@
+---
+title: "Analisando a atenção básica à saúde em São Paulo com o pacote asha (versão inicial)"
+author: "Bruno Pinheiro"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Análise da acessibilidade espacial à saúde}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Introdução
+
+O pacote em questão é produto de um projeto de pesquisa que realizou a análise da acessibilidade espacial à atenção básica de saúde no município de São Paulo. Ele compila um grupo de funções que viabilizam a reprodução do procedimento adotado para a modelagem, a geração e análise de dois indicadores: acessibilidade competitiva (AC) e acessibilidade viável (AV).
+
+A análise espacial destes indicadores articula no território dimensões de disponibilidade e de acessibilidade, retratando um determinado acoplamento entre a infraestrutura de oferta dos sistemas de saúde e a população. Esta vinheta apresenta como usar o pacote para replicar este tipo de análise.
+
+## O pacote `asha`
+
+O pacote auxiliar na realização computacional das seguintes tarefas envolvidas na análise da acessibilidade espacial:
+
+(a) Levantamento de dados de rota
+
+(b) Modelagem da estrutura de Origem-Destino do sistema de saúde
+
+(c) Geração de indicadores
+
+(d) Visualização dos indicadores
+
+Dada a disponibilidade de um conjunto particular de dados, o objetivo das funções do pacote é viabilizar a realização deste fluxo.
+
+## Funções e classes
+
+Basicamente o pacote lida com duas classes de dados: data frames e objetos espaciais do tipo `sf` (*simple features*). O pacote `sf` permite integrar a análise espacial de forma automática ao `tidyverse`, de modo que é possível valer-se das funcionalidades do `dplyr`, do `ggplot2` e outros pacotes que integram a linguagem `tidy` no R.
+
+**Modelagem da acessibilidade espacial**
+
+* `asha_intersect`
+
+* `asha_nn`
+
+**Levantamento de dados de mobilidade**
+
+* `asha_zones`
+
+* `asha_dists`
+
+**Geração de indicadores**
+
+* `asha_ac`
+
+* `asha_av`
+
+**Visualização dos dados**
+
+* `asha_bar`
+
+* `asha_hist`
+
+* `asha_boxplot`
+
+* `asha_dens`
+
+## Dados fundamentais
+
+Antes de seguir vamos carregar os pacotes que utilizaremos:
+
+```{r}
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(asha)
+```
+
+Para utilizar o pacote `asha` é necessário levantar previamente dados demográficas e sobre os equipamentos de saúde, georreferenciados. No caso, a pesquisa baseou-se nas seguintes bases de dados:
+
+* `setores_sp`: Malha de setores censitários da cidade de São Paulo
+
+```{r, fig.width = 5, fig.height = 6}
+plot(setores_sp[ ,1], lwd = .1, col = "white")
+# ou
+# ggplot(setores_sp) +
+#   geom_sf(lwd = .1, fill = "white") +
+#   theme_light()
+```
+
+Trata-se de um objeto espacial de classe `sf`, contendo a malha de setores e um conjunto de variáveis relacionadas a cada setor censitário, que são 18.953.
+
+```{r}
+glimpse(setores_sp)
+```
+
+A variável `pessoas_setor` representa o número de moradores em domicílios particulares e coletivos. Esta variável foi importada à malha geográfica a partir do arquivo `Domicilio02_SP1.csv`, que consta nos resultados do universo do Censo 2010 agregados por setor censitário, também disponibilizados pelo IBGE.
+
+* `ubs_sp`: Localização das UBS da cidade de Sao Paulo
+
+```{r, fig.width = 5, fig.height = 6}
+ggplot() +
+  geom_sf(data = ubs_sp, col = "red", lwd = .3) +
+  theme_light()
+```
+
+Consiste num conjunto de pontos georreferenciados, cada um representando uma Unidade Básica de Saúde da cidade de São Paulo. Esta base indica os "pontos de destino" na nossa pesquisa, isto é, os pontos que são objetivo final do percurso das pessoas entre suas residências e o provedor do serviço de atenção básica de saúde. Cada UBS está referenciada pelo seu código no Cadastro Nacional de Estabelecimentos de Saúde (CNES).
+
+```{r}
+glimpse(ubs_sp)
+```
+ 
+Esta base de dados é fruto de uma atualização no shape file de UBS disponibilizados no Portal de Dados Abertos do Município de São Paulo e também no Portal GeoSampa, que envolveu cruzamento com uma base mais recente de áreas de UBS e geocodificação de endereços.
+
+* `ubs_sp_areas`: Áreas de cobertura das UBS da cidade de São Paulo
+
+Cada UBS é responsável por atender a população residente num território determinado pela sua área de cobertura.
+
+```{r, fig.width = 5, fig.height = 6}
+ggplot() +
+  geom_sf(data = ubs_sp_areas, lwd = .3) +
+  geom_sf(data = ubs_sp, col = "red", lwd = .2) +
+  theme_light()
+```
+
+Embora esta base não esteja disponível para acesso via transparência ativa, foi possível obtê-la a partir de pedido de acesso à informação impetrado para a Secretaria Municipal de Saúde da Prefeitura de São Paulo.
+
+* `ubs_sp_profissionais`: Total de medicos e enfermeiros nas UBS de São Paulo
+
+```{r}
+glimpse(ubs_sp_profissionais)
+```
+
+É um data frame com três colunas, que apontam o total de médicos e de enfermeiros trabalhando em cada UBS, identificadas pelo código CNES.
+
+**Resumindo**
+
+* Utilizamos a classe `sf` para representar os dados espaciais, portanto o pacote não funciona com objetos de classe `sp`.
+
+* É preciso levantar previamente:
+
+    + Uma malha territorial para os dados demográficos (por exemplo, setores censitários)
+    + Uma malha territorial da saúde (que também pode ser gerada a partir dos setores censitários, em caso de não existir)
+    + Pontos de localização dos estabelecimento de saúde georreferenciados
+    + Dados demográficos capazes de referenciar territorialmente
+    + Dados sobre a quantidade de profissionais nos estabelecimentos de saúde
+
+# Identificar dados de rotas
+
+Queremos estabelecer a proximidade em termos de distância de caminhada e não a distância euclidiana.
+
+Um possibilidade é utilizar diretamente a função `stplanr::dist_google`. Ela consulta a *Google Distance Matrix API* para todas as conexões possíveis entre pontos de origem e de destino, gerando um data frame contendo as informações de rota. No caso são 19553 centroides e 456 UBS, o que daria um total de 8.642.568 consultas.
+
+Esta opção dá a flexibilidade de, após proceder com todas as consultas, poder analisar todos os modelos territoriais possíveis a partir da relação entre setores censitários e UBS. Para pequenos municípios esta pode ser uma alternativa viável, porém seria extremamente cara, dados os custos cobrados pelo Google para uso massivo da API, já que seria inviável realizar gratuitamente com as limitações impostas pelo serviço (que é de 2500 consultas diárias).
+
+Uma opção um pouco menos flexível, mas eficiente dependendo dos objetivos, é supor que a UBS com a menor distância de caminhada do centroide do setor censitário está dentro de um número determinado de UBS mais próximas em termos euclidianos. Consideramos razoável supor que o menor tempo de caminhada está entre as 5 menores distâncias euclidianas. Este método os passos a seguir:
+
+## Criar centroides
+
+Os setores censitários representam a origem e cada UBS representa o destino de uma partição de setores censitários. Para computar as distâncias adotaremos o centroide como o ponto médio de cada setor censitário.
+
+```{r}
+centroides_sp <-
+  st_centroid(setores_sp) %>%
+  select(cd_geocodi)
+glimpse(centroides_sp)
+```
+
+Deixamos apenas a variável de identificação do setor, já que as demais não serão utilizadas com os centroides.
+
+```{r, fig.width = 3, fig.height = 4}
+plot(centroides_sp, col = "black", pch = 16, cex = .2)
+# ou
+# ggplot(centroides_sp) +
+#   geom_sf(lwd = .2) +
+#   theme_light()
+```
+
+## Combinar UBS e setor censitário por proximidade euclidiana
+
+```{r}
+od_euclidiano <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 5)
+glimpse(od_euclidiano)
+```
+
+Neste caso o total de pares possíveis é 94.765, sendo este o total de consultas que serão feitas à API. A consulta precisa ser feita para cada uma das linhas do dataset e não todos para todos, como seria feito com `stplanr::dist_google`. A função `asha_dists` é baseada na `dist_google` e dá conta desta tarefa. Além de consultar as combinações linha a linha e não todos para todos, esta tem a vantagem de lidar automaticamente com o erro retornado quando a API não consegue estabelecer uma rota entre dois pontos, adicionando uma linha em branco e continuando a consulta. No caso do pacote `stplanr`, o erro para o processo.
+
+## Preparar base de zonas
+
+A consulta à *Google Distance Matrix API* demanda dois conjuntos de dados.
+
+Um deles deve ser dataframe nas quais as duas primeiras colunas indicam o fluxo, o que faz o conjunto `od_euclidiano` criado acima, nas duas colunas que indicam o setor censitário (o destino) e a UBS correspondente (a origem), por código de identificação. As outras duas colunas indicam se é a primeira, a segunda (...) UBS mais próxima do setor e a distância em questão, em metros.
+
+O segundo conjunto de dados deve conter os pontos espaciais das origens e dos destinos possíveis, que representam as zonas de origem e destino. Eles devem estar reunidos em um só dataset, sendo que a primeira coluna deve conter todos os valores das duas primeiras colunas de `od_euclidiano`.
+
+```{r}
+zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
+glimpse(zonas)
+```
+
+Agora é possível efetuar a consulta. A função por padrão busca os resultados para o modal caminhada ("walking"), que não necessita de chave de API. Portanto basta indicar como primeiro argumento o objeto OD contendo o fluxo e como segundo argumento o objeto zonas criado na etapa anterior, com os pontos espaciais de centroides e UBS.
+
+## Levantar dados de rotas
+
+```{r, eval = FALSE}
+# não executar
+ubs_sp_mobilidade <- asha_dists(od_euclidiano, zonas)
+```
+
+O resultado será um dataset contendo as coordenadas lat long de todos os pontos de origem e destino, seus endereços, além de variáveis contendo as distâncias em metros e os tempos de percurso em segundos para o modal escolhido. O dataset ubs_sp_mobilidade embutido no pacote é o resultado da consulta para todo `od_euclidiano`, realizada previamente.
+
+```{r}
+glimpse(ubs_sp_mobilidade)
+```
+
+# Modelar a acessibilidade espacial
+
+## Modelo vigente
+
+Aqui é preciso identificar os setores censitarios associados as áreas de UBS. Um setor é dado como dentro de uma área de UBS se o seu centroide está no interior da área.
+
+```{r}
+od_vigente <- asha_intersect(ubs_sp_areas, centroides_sp, "cnes", "cd_geocodi")
+glimpse(od_vigente)
+
+# load("~/R/asha/data-raw/setores_ubs.rda")
+# table(od_vigente %>% arrange(cd_geocodi, cnes) == setores_em_areas_ubs %>% arrange(CD_GEOCODI, CNES))
+# table(paste0(od_vigente$cd_geocodi, od_vigente$cnes) %in% paste0(setores_em_areas_ubs$CD_GEOCODI, setores_em_areas_ubs$CNES))
+
+```
+
+O resultado tem 18948 setores, de 18953. Os cinco nao incluidos não estão dentro de nenhuma área de ubs, por diferençaas na geometria. Abaixo identico os setores ausentes e busco no mapa as UBS correspondentes, para depois incluir no dataset.
+
+```{r}
+od_vigente <-
+  od_vigente %>%
+  rbind(
+    data.frame(cd_geocodi = setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% od_vigente$cd_geocodi)],
+               cnes = c("3121135", "4049934", "2788039", "2788217", "2788500"))
+    )
+```
+
+E agora já podemos mesclar na base `od_vigente` as informações de rota para os respectivos pares de setores censitários e UBS.
+
+```{r}
+od_vigente <- 
+  od_vigente %>%
+  merge(ubs_sp_mobilidade, by = c("cd_geocodi", "cnes"), all.x = TRUE) %>%
+  select(cd_geocodi, cnes, distancias, tempo) %>%
+  mutate(modelo = "vigente")
+summary(od_vigente)
+```
+
+As colunas distancias e tempo apresenta 701 valores NA nas colunas distancias e tempo. Entre estes valores provavelmente há tanto casos sem resposta da API, como casos em que a UBS do modelo vigente não é uma das 5 mais próximas em termos euclidianos. É preciso então separar estes casos e realizar nova consulta apenas para eles.
+
+```{r}
+# separar
+od_vigente_falta <-
+  od_vigente %>%
+  filter(is.na(tempo)) %>%
+  select(cd_geocodi, cnes)
+```
+
+```{r, eval = FALSE}
+# não executar
+rotas_faltas <- asha_dists(od_vigente_falta, zonas)
+```
+
+```{r}
+od_vigente <-
+  od_vigente %>%
+  filter(!is.na(tempo)) %>%
+  rbind(
+    data.frame(select(rotas_faltas, cd_geocodi, cnes, distancias, tempo),
+               modelo = "vigente")
+    )
+```
+
+## Modelo de proximidade
+
+Em `ubs_sp_mobilidade` temos os tempos e distancias de caminhada para as 5 UBS mais próximas de cada centroide, mas o nosso modelo de proximidade determina apenas a mais próxima. Por isso é necessário filtrar os casos que atendem este critério para cada centroide.
+
+```{r}
+od_prox <-
+  ubs_sp_mobilidade %>%
+  group_by(cd_geocodi) %>%
+  filter(tempo == min(tempo)) %>%
+  filter(distancias == min(distancias)) %>% # há casos de menores tempos com distancias iguais
+  ungroup() %>%
+  select(cd_geocodi, cnes, distancias, tempo) %>%
+  mutate(modelo = "proximidade")
+  
+glimpse(od_prox)
+```
+
+O dataset contem apenas 18.918 linhas e não 18.953. Isto pode ter ocorrido por duas razões: ou a API falhou em encontrar estes erros ou há casos em que a UBS mais próxima do setor censitário em termos de mobilidade não está entre as 5 mais próximas em termos euclidianos. 
+Antes de seguir é necessário verificar este erro. Para isso vamos identificar os setores censitários e suas respectivas UBS que não estão presentes em od_prox e depois verificar se estes pares estão todos presentes em ubs_sp_mobilidade. Se todos estiverem, trata-se de resposta inexistente da API, se não significa que há setor que necessita frequentar uma UBS que não está entre as cinco menores distâncias euclidianas.
+
+```{r}
+# identificar os setores que não estão em od_prox
+setores <- setores_sp$cd_geocodi[!(setores_sp$cd_geocodi %in% od_prox$cd_geocodi)]
+length(setores)
+```
+
+São 48 os setores censitários não presentes em `od_prox`. Agora vamos verificar se estes setores estão sem resultado em `ubs_sp_mobilidade`.
+
+```{r}
+# verificar estes setores em ubs_sp_mobilidade
+erros <-
+  ubs_sp_mobilidade %>%
+  filter(cd_geocodi %in% setores) %>%
+  select(cd_geocodi, cnes, distancias, tempo)
+summary(erros)
+```
+
+O resultado indica 240 códigos de setor censitário, o que faz sentido já que `ubs_sp_mobilidade` tem os resultados da consulta para as 5 UBS mais próximas de cada setor, que aparecem 5 vezes cada na coluna `cd_geocodi`. Além disso, não há resultados de distancia e tempo de viagem para a rota à pé entre os setores e as UBS. Para realmente garantir, vamos confirmar que os 240 são os 48 setores repetidos.
+
+```{r}
+table(erros$cd_geocodi)
+```
+
+Já que sim, vamos realizar a consulta apenas para estes 240 casos, a fim de confirmar os resultados inválidos.
+
+```{r, eval = FALSE}
+# não executar
+erros_dists <- asha_dists(erros, zonas)
+summary(erros_dists)
+```
+
+Acima não executamos para não consumir na geração da vinheta, mas a consulta resulta em erro da API em todos os casos, de modo que podemos simplesmente incluir este conjunto de 48 setores e suas respectivas UBS, atribuindo NA para as demais variaveis. Neste caso vamos considerar a UBS mais próxima em termos euclidianos. Já vamos também mesclar os dados de rotas.
+
+```{r}
+od_prox <-
+  od_prox %>%
+  rbind(od_euclidiano %>%
+          filter(proximidade == 1, cd_geocodi %in% setores) %>%
+          select(cd_geocodi, cnes) %>%
+          mutate(distancias = NA, tempo = NA, modelo = "proximidade")
+        )
+glimpse(od_prox)
+```
+
+```{r}
+rm(erros)
+```
+
+**Observação**
+
+No caso estamos interessado nos tempos de caminhada em função das características próprias da acessibilidade na área de atenção básica à saúde. Mas a função permite consultar também os modais bicicleta, carro e transporte público. Pode ser feita, por exemplo, a consulta para o modal transporte, que necessita de uma chave de API, retornando também o custo da tarifa, conforme o exemplo a seguir (não realizado aqui para não compartilhar uma chave).
+
+```{r, eval = FALSE}
+# não executar
+teste <- asha_dists(od_euclidiano[60001:60005, ], zonas, modal = "transit", api = "chave_da_api")
+```
+
+## Finalizar base OD
+
+Para finalizar vamos unir os dados OD, de modo a ter reunidas num objeto a UBS referente aos setores censitários em cada modelo, e mesclar as variáveis demográficas presentes em `setores_sp` e as variáveis sobre os equipamentos de saúde, presentes em `ubs_sp_profissionais`.
+
+```{r}
+od <-
+  rbind(od_vigente, od_prox) %>%
+  merge(ubs_sp_profissionais, by = "cnes", all.x = TRUE) %>%
+  merge(setores_sp, by = "cd_geocodi", all.x = TRUE) %>%
+  mutate(oportunidades = total_enf + total_med) %>%
+  select(cd_geocodi, cnes, dens_demografica, pessoas_setor,
+         distancias, tempo, total_enf, total_med, oportunidades, modelo)
+  
+summary(od)
+```
+
+# Calcular indicadores
+
+## Acessibilidade competitiva (AC)
+
+O indicador AC é informação do setor censitário baseado na relação espacial entre oportunidades (oferta) e demanda de cada UBS.
+
+```{r}
+od <- asha_ac(od, pessoas_setor, cnes)
+glimpse(od)
+```
+
+## Acessibilidade viável (AV)
+
+Que pode ser facilmente criado com a função `asha_av`. Ao indicar o data frame, a coluna de id da área de saúde (zonas de destino) e a variável com o número de habitantes dos setores censitários (zonas de origem), a função adicionará 3 colunas, com os minutos, um variável binária indicando se o setor está no raio de acessibilidade viável ou não e outra que indica a proporção da população no raio de acesso viável em cada UBS.
+
+```{r}
+od <- asha_av(od, cnes, tempo, pessoas_setor)
+glimpse(od)
+```
+
+## Mesclar variáveis OD em setores_sp
+
+```{r}
+vigente <-
+  od %>%
+  filter(modelo == "vigente") %>%
+  select(-pessoas_setor, -dens_demografica, -modelo, -total_enf, -total_med) %>%
+  rename(cnes_vig = cnes,
+         o_vig = oportunidades, d_vig = demanda,
+         ac_vig = ac, minutos_vig = minutos,
+         av_vig = av, av_prop_vig = av_prop,
+         distancias_vig = distancias, tempo_vig = tempo)
+
+proximidade <-
+  od %>%
+  filter(modelo == "proximidade") %>%
+  select(-pessoas_setor, -dens_demografica, -modelo) %>%
+  rename(cnes_prox = cnes,
+     o_prox = oportunidades, d_prox = demanda,
+     ac_prox = ac, minutos_prox = minutos,
+     av_prox = av, av_prop_prox = av_prop,
+     distancias_prox = distancias, tempo_prox = tempo)
+
+
+setores_sp <-
+  setores_sp %>%
+  merge(vigente, by = "cd_geocodi", all.x = TRUE) %>%
+  merge(proximidade, by = "cd_geocodi", all.x = TRUE)
+```
+
+# Visualização dos dados
+
+## Variáveis numéricas
+
+Para análises exploratórias, as funções de visualização podem facilitar a tarefa.
+
+Com a função `asha_hist` podemos visualizar a distribuição dos indicadores relacionados à disponibilidade de profissinais por UBS.
+
+Podemos analisar facilmente uma única variável:
+
+```{r}
+asha_hist(setores_sp, "d_prox")
+```
+
+Ou podemos plotar várias variáveis de uma só vez guardando os plots com `lapply()`.
+
+```{r, fig.width=3, fig.height=2}
+vars <- c("o_vig", "o_prox", "d_vig", "d_prox")
+lapply(vars, function(i) asha_hist(setores_sp, i))
+```
+
+Se quisermos também podemos organizar facilmente os gráficos em um grid utilizando o `gridExtra::grid.arrange()`.
+
+```{r, fig.width=7, fig.height=6, warning = FALSE, message = FALSE}
+plots <- lapply(vars, function(i) asha_hist(setores_sp, i))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+```
+
+Ainda, é possível estabelecer o parâmetro `fill` e plotar a distribuição para os níveis de uma variável categórica. Por exemplo, acima plotamos as variáveis o, d e minutos para os dois modelos, especificando cada variável em `setores_sp`. O objeto `od` estoca estas mesmas informações, em formato tidy, e portanto o gráfico pode ser feito também assim.
+
+```{r, fig.width=7, fig.height=3, warning = FALSE, message = FALSE}
+vars <- c("oportunidades", "demanda")
+plots <- lapply(vars, function(i) asha_hist(od, i, fill = "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+```
+
+## Variáveis categóricas
+
+```{r}
+od <-
+  od %>%
+  mutate(minutos_classes = cut(minutos,
+                               breaks = c(0, 5, 10, 15, 30, 60, Inf),
+                               labels = c("< 5", "5 a 10", "10 a 15",
+                                          "15 a 30", "30 a 60", "> 60")),
+         av_prop_decimais = cut(av_prop,
+                                breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1),
+                                labels = c("Até 10%", "10-20%", "20-30%", "30-40%", "40-50%",
+                                           "50-60%", "60-70%", "70-80%", "80-90%", "90-100")))
+```
+
+Da mesma forma, podemos plotar uma variável.
+
+```{r}
+asha_bar(od, "minutos_classes")
+```
+
+Ou mais de uma variável.
+
+```{r, fig.width=6, fig.height=6}
+vars <- c("minutos_classes", "av_prop_decimais")
+plots <- lapply(vars, function(i) asha_bar(od, i))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 1))
+```
+
+Ou ainda incluir uma terceira dimensão dimensão.
+
+```{r, fig.width=6, fig.height=8}
+vars <- c("minutos_classes", "av_prop_decimais")
+plots <- lapply(vars, function(i) asha_bar(od, i, "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 1))
+```
+
+```{r}
+glimpse(od)
+```
+
+
+```{r, fig.width=6, fig.height=14}
+vars <- od %>% select_if(is.numeric) %>% names()
+plots <- lapply(vars, function(i) asha_hist(od, i, "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+```
+
+## Visualização espacial
+
+Os mapas podemos plotar diretamente com a função `geom_sf`, ainda disponível apenas na versão de desenvolvimento do `ggplot2`.
+
+```{r, fig.width = 5, fig.height = 6}
+# mapa AV para cada modelo
+p1 <-
+  setores_sp %>%
+  group_by(av_vig) %>%
+  summarise(sum(pessoas_setor)) %>%
+  ggplot() +
+  geom_sf(aes(fill = av_vig), lwd = 0) +
+  scale_fill_grey(na.value="#f1f1f1", start=.7, end=.4) +
+  theme_light()
+
+p2 <-
+  setores_sp %>%
+  group_by(av_prox) %>%
+  summarise(sum(pessoas_setor)) %>%
+  ggplot() +
+  geom_sf(aes(fill = av_prox), lwd = 0) +
+  scale_fill_grey(na.value="#f1f1f1", start=.7, end=.4) +
+  theme_light()
+```
+
+```{r, fig.width = 8, fig.height = 5}
+do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol = 2))
+```
+
+Ou se quisermos uma camada base do território, podemos usar o `ggmap` com o sistema `plot_sf`.
+
+```{r}
+# Obter mapa de São Paulo no Google Maps
+library(ggmap)
+sampa <- get_map("São Paulo, SP, Brazil", zoom = 9, maptype = "hybrid", source = "google")
+
+# mapa AV para cada modelo
+p1 <-
+  setores_sp %>%
+  group_by(av_vig) %>%
+  summarise(sum(pessoas_setor))
+
+p2 <-
+  setores_sp %>%
+  group_by(av_prox) %>%
+  summarise(sum(pessoas_setor))
+
+# plotar
+plot(st_transform(p1[1], 3857), bgMap = sampa, lwd = .1)
+plot(st_transform(p2[1], 3857), bgMap = sampa, lwd = .1)
+```
+
+E para plots que demandam cálculos prévios, podemos utilizar normalmente o `dplyr` junto do `ggplot2`.
+
+```{r, fig.width=6, fig.height=2}
+od %>%
+  filter(!is.na(av), !is.na(pessoas_setor)) %>%
+  group_by(modelo, av) %>%
+  summarise(prop = sum(pessoas_setor)) %>%
+  mutate(prop = prop.table(prop)) %>%
+  ggplot(aes(x = av, y = prop, fill = modelo)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_text(aes(label = scales::percent(round(prop, 3))),
+            position = position_dodge(width = 1), vjust = .5, hjust = -.1) +
+  ggtitle("% de população em raio de AV") +
+  ylim(0, .8) + coord_flip() + theme_light()
+```
+
+```{r}
+rm(list=ls())
+```
+

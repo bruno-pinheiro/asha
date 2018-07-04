@@ -4,12 +4,14 @@
 \alias{asha_bar}
 \title{Grafico de barras para uma variavel categorica}
 \usage{
-asha_bar(df, x)
+asha_bar(df, x, fill = NULL)
 }
 \arguments{
 \item{df}{Um data.frame}
 
 \item{x}{Uma variavel categorica}
+
+\item{fill}{Uma variavel categorica}
 }
 \value{
 Um grafico de barras para a variavel \code{x} da base \code{df}.

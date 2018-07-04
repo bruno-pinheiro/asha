@@ -4,12 +4,14 @@
 \alias{asha_hist}
 \title{Histograma para uma variavel numerica}
 \usage{
-asha_hist(df, x)
+asha_hist(df, x, fill = NULL)
 }
 \arguments{
 \item{df}{Um data.frame}
 
 \item{x}{Uma variavel numerica}
+
+\item{fill}{Um variavel categorica}
 }
 \value{
 Um bonito histograma para a variavel \code{x} da base \code{df}.

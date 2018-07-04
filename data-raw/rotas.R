@@ -1,103 +1,47 @@
-# load("data-raw/rotas.rda")
-#
-# rotas <-
-#   rotas %>%
-#   rename(cd_geocodi = code_o,
-#          cnes = code_d) %>%
-#   mutate(minutos_pe = duration / 60) %>%
-#   rename(origem = from_addresses,
-#          destino = to_addresses,
-#          metros_pe = distances,
-#          segundos_pe = duration,
-#          ox = fx, oy = fy,
-#          dx = tx, dy = ty) %>%
-#   select(-currency, -fare)
+library(dplyr)
+
+#### FUNCAO asha_dists FUNCIONANDO COM UM ERRO
+
 api01 <- "AIzaSyBRPrAjSE_pRMWSq_XlO4BFwGD63j_gB4U"
 api02 <- "AIzaSyCMQ5yJQ6UmiHCOT8M-S5mwENpAa2BZcMs"
-
-
+# api03 <- AIzaSyBBKLBM_tckdQQxURAaGI5YRFKD0vVkX9U
 apis <- c("AIzaSyBRPrAjSE_pRMWSq_XlO4BFwGD63j_gB4U",
           "AIzaSyCMQ5yJQ6UmiHCOT8M-S5mwENpAa2BZcMs",
           "AIzaSyBBKLBM_tckdQQxURAaGI5YRFKD0vVkX9U")
 
+dist_vigente <- asha_dists(modelo_vigente, base_saude_setores, api02)
+dist_prox <- asha_dists(modelo_proximidade[1:20, ], base_saude_setores, api02)
 
-data(cents, package = "stplanr")
-data(flow, package = "stplanr")
+load("data-raw/rotas.rda")
 
-zonas <- as(st_transform(base_saude_setores, 4326), "Spatial")
-od <- stplanr::od2odf(flow=modelo_proximidade[c(1:5,256,274,276), ], zones=zonas)
+ubs_sp_mobilidade <-
+  rotas %>%
+  rename(cd_geocodi = code_o,
+         cnes = code_d,
+         de = from_addresses,
+         para = to_addresses,
+         distancias = distances,
+         tempo = duration,
+         ox = fx, oy = fy,
+         dx = tx, dy = ty) %>%
+  select(-currency, -fare)
 
-data(cents, package = "stplanr")
-data(flow, package = "stplanr")
+str(ubs_sp_mobilidade)
 
-od <- stplanr::od2odf(flow=flow, zones=cents)
+load("data-raw/rotas_faltas.rda")
+rotas_faltas <-
+  rotas_faltas %>%
+  select(-currency, -fare, - MINUTOS) %>%
+  rename(cd_geocodi = CD_GEOCODI,
+         cnes = CNES,
+         de = from_addresses,
+         para = to_addresses,
+         distancias = DISTANCIAS,
+         tempo = SEGUNDOS,
+         ox = fx, oy = fy,
+         dx = tx, dy = ty)
+names(rotas_faltas)
 
-uma_linha <- data.frame(from_addresses=NA, to_addresses=NA, distances=NA,
-                        duration=NA, currency=NA, fare=NA)
-output <- data.frame()
+devtools::use_data(ubs_sp_mobilidade, overwrite = TRUE)
 
-for (linha in 1:nrow(od)) {
-  o <- od[linha, 3:4]
-  d  <- od[linha, 5:6]
-  output <- tryCatch(
-    {
-      rbind(output, stplanr::dist_google(from = o, to = d,
-                                         mode = 'walking', google_api = api02))
-    },
-    error = function(na) {
-      message("Erro: No results for this request (e.g. due to lack of support for this mode between the from and to locations)")
-      message(na)
-      output <- rbind(output, uma_linha)
-    }
-  )
-}
-
-dput(modelo_proximidade[c(1:5,256,274,276), ])
-
-setores <- modelo_proximidade[c(1:5,256,274,276), 1]
-cnes <- modelo_proximidade[c(1:5,256,274,276), 2]
-
-base_saude_setores <-
-
-
-n <- 1
-
-for (linha in 1:nrow(od)) {
-  o <- od[linha, 3:4]
-  d  <- od[linha, 5:6]
-  output <- tryCatch(
-    {
-      rbind(output, stplanr::dist_google(from = o, to = d,
-                                         mode = 'walking',
-                                         google_api = apis[n]))
-    },
-    error = function(na) {
-      message("Erro: No results for this request (e.g. due to lack of support for this mode between the from and to locations)")
-      message(na)
-      output <- rbind(output, uma_linha)
-      },
-    error = function(quota) {
-      message("Erro: You have exceeded your daily request quota for this API.")
-      message(quota)
-      n <- n + 1
-      }
-  )
-}
-
-
-
-myTryCatch <- function(expr) {
-  warn <- err <- NULL
-  value <- withCallingHandlers(
-    tryCatch(expr,
-             error=function(e) {
-               err <<- e
-               NULL
-               }),
-    warning=function(w) {
-      warn <<- w
-      invokeRestart("muffleWarning")
-    })
-  list(value=value, warning=warn, error=err)
-}
-devtools::use_data(rotas)
+devtools::use_data(rotas_faltas, overwrite = TRUE)

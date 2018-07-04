@@ -31,19 +31,22 @@ if (!file.exists(system.file("extdata", "ubs_sp_areas/", package = "asha"))) {
 
 #### IMPORTAR DADOS -------------
 
-enfermeiros <-
-  read.csv(system.file("extdata", "enfermeiros.csv", package = "asha"),
-           sep=";", stringsAsFactors = FALSE) %>%
+ubs_sp_profissionais <-
+  merge(read.csv(system.file("extdata", "enfermeiros.csv", package = "asha"),
+                 sep=";", stringsAsFactors = FALSE),
+        read.csv(system.file("extdata", "medicos.csv", package = "asha"),
+                 sep=";", stringsAsFactors = FALSE),
+        by = "ESTAB_SA") %>%
   mutate(cnes = substring(ESTAB_SA, first=1, last=7)) %>%
-  rename(total_enf = TOTAL_ENF) %>%
-  select(-ESTAB_SA)
+  rename_all(tolower) %>%
+  select(sort(names(.)), -estab_sa) %>%
+  filter(cnes %in% ubs_sp$cnes)
 
-medicos <-
-  read.csv(system.file("extdata", "medicos.csv", package = "asha"),
-           sep=";", stringsAsFactors = FALSE) %>%
-  mutate(cnes = substring(ESTAB_SA, first=1, last=7)) %>%
-  rename(total_med = TOTAL_MED) %>%
-  select(-ESTAB_SA)
+ubs_sp_profissionais <-
+  ubs_sp_profissionais %>%
+  bind_rows(data.frame(cnes = ubs_sp$cnes[!(ubs_sp$cnes %in% ubs_sp_profissionais$cnes)],
+                   total_enf = NA, total_med = NA)) %>%
+  arrange(cnes)
 
 ubs_sp_areas <-
   read_sf(dsn="inst/extdata/ubs_sp_areas", layer="AA_UBS_MSP_2015_2016_UTM_SIRGAS2000_fuso23S",
@@ -52,8 +55,6 @@ ubs_sp_areas <-
   st_make_valid() %>%
   select(CNES, NOMEUBS, STS, CRS, SUBPREF) %>%
   rename_all(tolower) %>%
-  merge(medicos, by = "cnes", all.x = TRUE) %>% # adicionar medicos
-  merge(enfermeiros, by = "cnes", all.x = TRUE) %>% # adicionar enfermeiros
   mutate(sts = as.factor(sts),
          crs = as.factor(crs))
 
@@ -64,8 +65,7 @@ ubs_sp <-
   st_transform(31983) %>%
   st_make_valid() %>%
   select(-.id) %>%
-  rename(cnes = CNES) %>%
-  st_join(select(ubs_sp_areas, -cnes))
+  rename(cnes = CNES)
 
 #### IDENTIFICAR SETORES NAS AREAS DE COBERTURA -----------
 
@@ -100,37 +100,37 @@ setores_sp <-
                by="cd_geocodi") %>%
   rename(ubs_prox = cnes)
 
-rm(modelo_vigente, modelo_proximidade,
-   medicos, enfermeiros)
+rm(modelo_vigente, modelo_proximidade)
 
 #### BASE UNICA DE PONTOS DE UBS E CENTROIDES DE SETORES -------------
 
-# criar base simples de ubs
-ubs_ids <-
-  ubs_sp %>%
-  select(cnes) %>%
-  rename(id = cnes) %>%
-  mutate(tipo = "UBS")
+zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
 
-# criar base simples de centroides
-centroides_ids <-
-  centroides_sp %>%
-  select(cd_geocodi) %>%
-  rename(id = cd_geocodi) %>%
-  mutate(tipo = "centroide")
-
-# Unir os pontos de centroides e ubs num so objeto
-base_saude_setores <-
-  rbind(centroides_ids, ubs_ids)
-
-rm(centroides_ids, ubs_ids)
-
-]]
 # Guardar para uso no pacote
 devtools::use_data(ubs_sp_areas, overwrite = T)
 devtools::use_data(ubs_sp, overwrite = T)
 devtools::use_data(setores_sp, overwrite = T)
-devtools::use_data(base_saude_setores)
+devtools::use_data(zonas, overwrite = T)
+devtools::use_data(ubs_sp_profissionais, overwrite = T)
 
 rm(list=ls())
 
+
+
+asha_zones <- function(sf1, sf2, id1, id2) {
+  id = NULL
+  tipo = NULL
+  rbind(
+    sf1 %>%
+      select(!!id1) %>%
+      rename(id = !!id1) %>%
+      mutate(tipo = !!id1),
+    sf2 %>%
+      select(!!id2) %>%
+      rename(id = !!id2) %>%
+      mutate(tipo = !!id2)
+  )
+}
+
+
+rm(centroides_ids, ubs_ids)

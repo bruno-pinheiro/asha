@@ -35,7 +35,7 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
   sf1 %>%
     select(id1) %>%
     st_join(select(sf2, id2), join = st_intersects) %>%
-    as.data.frame %>%
+    as.data.frame() %>%
     select(id2, id1)
 }
 
@@ -74,8 +74,8 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
-  # id1 <- rlang::sym(id1)
-  # id2 <- rlang::sym(id2)
+  id1 <- rlang::sym(id1)
+  id2 <- rlang::sym(id2)
   nn.dists.Var1 <- NULL
   nn.dists.Var2 <- NULL
   nn.idx.value <- NULL
@@ -103,7 +103,7 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 
 # Funcao asha_dists ###########################
 
-#' @title Obter informações de distancia e tempo de viagem por modal
+#' @title Obter informacões de distancia e tempo de viagem por modal
 #' @name asha_dists
 #'
 #' @description Permite o levantamento de dados de rotas de viagem para
@@ -117,15 +117,15 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #'              walking, driving ou transit
 #' @param api String com API do Google Distance Matrix API
 #'
-#' @details Utiliza a funcao \code{\link[stplanr]{dist_google}} para consultar a
-#'          Google Matrix Distance API e pode incluir os modais caminhada,
-#'          transporte publico, bicicleta e carro. Prepara automaticamente
-#'          os dados com \code{\link[stplanr]{od2odf}} antes de realizar a consulta
-#'          e gera resultados para pares linha a linha, ao invés de todos para
-#'          todos como o pacote stplanr, reduzindo as consultas na API.
+#' @details Converte o CRS do objeto passado em \code{zonas} em lat long (4326) para
+#'          consultar a Google Matrix Distance API com funcao \code{\link[stplanr]{dist_google}}.
+#'          A consulta pode ser feita para os modais caminhada, transporte publico,
+#'          bicicleta e carro. Prepara automaticamente os objeto OD com
+#'          \code{\link[stplanr]{od2odf}} e gera resultados para pares linha a linha,
+#'          ao inves de todos para todos como o pacote stplanr, reduzindo o consumo da API.
 #'
 #' @return Retorna um data frame com colunas \code{de} (enderecos de origem),
-#'         \code{para} (endereços de destino), \code{distancias} (em metros),
+#'         \code{para} (enderecos de destino), \code{distancias} (em metros),
 #'         \code{tempo} (em segundos), \code{moeda} e \code{tarifa}
 #'
 #' @author Bruno Pinheiro
@@ -135,12 +135,12 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #'
 #' @examples
 #' modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
-#' asha_dists(modelo_proximidade[251:255, ], base_saude_setores, "transit", api = api02)
+#' asha_dists(modelo_proximidade[251:255, ], zonas, "transit", api = api02)
 #'
 #' @import dplyr sf stplanr
 #'
 #' @export
-asha_dists <- function(fluxo, zonas, modal, api) {
+asha_dists <- function(fluxo, zonas, modal = "walking", api) {
   from_addresses = NULL
   to_addresses = NULL
   distances = NULL
@@ -153,24 +153,276 @@ asha_dists <- function(fluxo, zonas, modal, api) {
                           distances = NA, duration = NA,
                           currency = NA, fare = NA)
   output <- data.frame()
-  for (linha in 1:nrow(od)) {
-    o <- od[linha, 3:4]
-    d  <- od[linha, 5:6]
-    output <- tryCatch(
-      {
-        rbind(output, stplanr::dist_google(from = o, to = d,
-                                           mode = modal, google_api = api))
+  if(missing(api)) {
+    for (linha in 1:nrow(od)) {
+      o <- od[linha, 3:4]
+      d  <- od[linha, 5:6]
+      output <- tryCatch(
+        {
+          rbind(output, stplanr::dist_google(from = o, to = d,
+                                             mode = modal))
         },
-      error = function(na) {
-        message(na)
-        output <- rbind(output, uma_linha)
+        error = function(na) {
+          message(na)
+          output <- rbind(output, uma_linha)
+        }
+      )
+    }
+    return(output <-
+             output %>%
+             rename(de = from_addresses, para = to_addresses,
+                    distancias = distances, tempo = duration,
+                    moeda = currency, tarifa = fare))
+    } else if(modal == "walking" & missing(api)) {
+      for (linha in 1:nrow(od)) {
+        o <- od[linha, 3:4]
+        d  <- od[linha, 5:6]
+        output <- tryCatch(
+          {
+            rbind(output, stplanr::dist_google(from = o, to = d,
+                                               mode = modal))
+          },
+          error = function(na) {
+            message(na)
+            output <- rbind(output, uma_linha)
+          }
+        )
       }
-    )
-  }
+      return(output <-
+               output %>%
+               rename(de = from_addresses, para = to_addresses,
+                      distancias = distances, tempo = duration,
+                      moeda = currency, tarifa = fare))
+      } else if(modal == "walking") {
+        for (linha in 1:nrow(od)) {
+          o <- od[linha, 3:4]
+          d  <- od[linha, 5:6]
+          output <- tryCatch(
+            {
+              rbind(output, stplanr::dist_google(from = o, to = d,
+                                                 mode = modal, google_api = api))
+            },
+            error = function(na) {
+              message(na)
+              output <- rbind(output, uma_linha)
+            }
+          )
+        }
+        return(output <-
+                 output %>%
+                 rename(de = from_addresses, para = to_addresses,
+                        distancias = distances, tempo = duration,
+                        moeda = currency, tarifa = fare))
+      } else if(missing(modal) & missing(api)) {
+            for (linha in 1:nrow(od)) {
+              o <- od[linha, 3:4]
+              d  <- od[linha, 5:6]
+              output <- tryCatch(
+                {
+                  rbind(output, stplanr::dist_google(from = o, to = d))
+                },
+                error = function(na) {
+                  message(na)
+                  output <- rbind(output, uma_linha)
+                }
+              )
+            }
+            return(output <-
+                     output %>%
+                     rename(de = from_addresses, para = to_addresses,
+                            distancias = distances, tempo = duration,
+                            moeda = currency, tarifa = fare))
+        } else {
+    for (linha in 1:nrow(od)) {
+      o <- od[linha, 3:4]
+      d  <- od[linha, 5:6]
+      output <- tryCatch(
+        {
+          rbind(output, stplanr::dist_google(from = o, to = d,
+                                           mode = modal, google_api = api))
+          },
+        error = function(na) {
+          message(na)
+          output <- rbind(output, uma_linha)
+          }
+      )
+    }
+    }
   return(output <-
-           output %>%
-           rename(de = from_addresses, para = to_addresses,
-           distancias = distances, tempo = duration,
-           moeda = currency, tarifa = fare))
+         output %>%
+         rename(de = from_addresses, para = to_addresses,
+         distancias = distances, tempo = duration,
+         moeda = currency, tarifa = fare))
 }
 
+
+# Funcao asha_zones ###########################
+
+#' @title Estrutura a base de zonas necessaria para usar \code{asha_dists}
+#' @name asha_zones
+#'
+#' @description Mescla facilmente dois objetos sf em um
+#'
+#' @param sf1 Um objeto sf com coluna de id (por exemplo pontos de origem)
+#' @param sf2 Um objeto sf com coluna de id (por exemplo pontos de destino)
+#' @param id1 String especificando a variavel de id do objeto sf1
+#' @param id2 String especificando a variavel de id do objeto sf2
+#'
+#' @details A funcao pega dois objetos espaciais de classe sf, mescla e
+#'          organiza seus codigos id em uma unica coluna. E importante
+#'          que os dois objetos tenham o mesmo crs definido previamente.
+#'
+#' @return Retorna um objeto sf com a coluna \code{id}, contendo os codigos de
+#'         identificacao de sf1 e sf2, e a coluna \code{tipo}, referenciando os
+#'         ids a partir dos nomes das variaves \code{id1} e \code{id2} passadas
+#'         na funcao.
+#'
+#' @author Bruno Pinheiro
+#'
+#' @examples
+#' zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
+#' str(zonas)
+#'
+#' @import dplyr sf
+#'
+#' @export
+asha_zones <- function(sf1, sf2, id1, id2) {
+  id = NULL
+  tipo = NULL
+  rbind(
+    sf1 %>%
+      select(!!id1) %>%
+      rename(id = !!id1) %>%
+      mutate(tipo = !!id1),
+    sf2 %>%
+      select(!!id2) %>%
+      rename(id = !!id2) %>%
+      mutate(tipo = !!id2)
+  )
+}
+
+
+# Funcao asha_ac ###########################
+
+#' @title Indicador AC
+#' @name asha_ac
+#'
+#' @description Cria o indicador de acessibilidade competitiva
+#'
+#' @param df1 Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.
+#' @param pop Variavel com o total de habitantes da menor unidade territorial
+#' @param area Variavel de id da area de cobertura, para a qual o indicador sera calculado
+#' @param modelo Variavel opcional para a construcao do indicador para modelos diferentes
+#'
+#' @details Alem das variaveis com numero de habitantes e id de area, que sao passados
+#'          na funcao, o dataframe deve conter a variavel \code{oportunidades}, que
+#'          sera automaticamente usada no calculo do indicador AC. Se o calculo for para
+#'          modelos diferentes, o data.frame devera ter uma variavel chamada modelo, com
+#'          os respectivos valores indicativos. Neste caso a funcao calcula o indicador da
+#'          area em cada modelo.
+#' @return Retorna o dataframe indicado no argumento \code{df1} acrescidas as colunas demanda
+#'         (que contabiliza a demanda total da \code{area}) e \code{ac}, com o indicador de
+#'         de acessibilidade competitiva, por area.
+#'
+#' @author Bruno Pinheiro
+#'
+#' @examples
+#' # asha_ac(df1, pop, area, modelo)
+#'
+#' @import dplyr
+#'
+#' @export
+asha_ac <- function(df1, pop, area, modelo = NULL) {
+  oportunidades <- NULL
+  demanda <- NULL
+  pop <- enquo(pop)
+  area <- enquo(area)
+  if(is.null(modelo)) {
+    return(
+      df1 %>%
+        group_by(!! area) %>%
+        mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+        ungroup() %>%
+        mutate(ac = (oportunidades / demanda) * 1000)
+      )
+  } else {
+  modelo <- enquo(modelo)
+  return(
+    df1 %>%
+      group_by(!! modelo, !! area) %>%
+      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      ungroup() %>%
+      mutate(ac = (oportunidades / demanda) * 1000)
+    )
+  }
+}
+
+
+
+# Funcao asha_av ###########################
+
+#' @title Indicador AV
+#' @name asha_av
+#'
+#' @description Cria o indicador de acessibilidade viavel (AV)
+#'
+#' @param df Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.
+#' @param id Variavel com o id das areas de saúde
+#' @param tempo Variavel com o tempo de deslocamento em segundos
+#' @param pop Variavel com o total de habitantes da
+#'            menor unidade territorial
+#'
+#' @details Utiliza as variaveis passadas na funcao para calcular o indicador de acessibilidade
+#'          viavel, incluindo a criacao das variaveis de acessibilidade.
+#' @return A funcao adiciona 3 colunas: \code{minutos} (com os minutos de deslocamento),
+#'         \code{av} (variavel binaria indicando se o setor esta no raio de acessibilidade viavel
+#'         ou nao) e \code{av_prop} (que indica a proporcao da populacao no raio de acesso viavel
+#'         em cada UBS.
+#'
+#' @author Bruno Pinheiro
+#'
+#' @examples
+#' # asha_av(df, id, tempo, pop)
+#'
+#' @import dplyr
+#'
+#' @export
+asha_av <- function(df, id, tempo, pop) {
+  av_prop = NULL
+  minutos = NULL
+  av = NULL
+  id <- enquo(id)
+  pop <- enquo(pop)
+  tempo <- enquo(tempo)
+
+  av_x <-
+    df %>%
+    mutate(minutos = !! tempo / 60,
+           av = minutos <= 15) %>%
+    filter(!is.na(av)) %>%
+    group_by(!! id, av) %>%
+    summarise(av_prop = sum(!! pop, na.rm = TRUE)) %>%
+    mutate(av_prop = prop.table(av_prop)) %>%
+    ungroup() %>%
+    filter(av == TRUE) %>%
+    select(-av)
+
+  if(nrow(av_x) < nrow(df %>% distinct(!! id))) {
+    av_x <-
+      av_x %>%
+      rbind(list(df %>% filter(!(!! id %in% pull(av_x, !! id))) %>% pull(!! id) %>% unique(), 0))
+    return(
+      df %>%
+        mutate(minutos = !! tempo / 60,
+               av = recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
+        left_join(av_x, by = quo_name(id))
+      )
+  } else {
+    return(
+      df %>%
+        mutate(minutos = !! tempo / 60,
+               av = recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
+        left_join(av_x, by = quo_name(id))
+      )
+  }
+}

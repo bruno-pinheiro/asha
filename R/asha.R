@@ -10,7 +10,7 @@
 #'
 #' @examples
 #' # plotar variavel numerica
-#' asha_hist(ubs_sp_areas, "total_enf")
+#' asha_hist(ubs_sp_profissionais, "total_enf")
 #' # plotar variavel categorica
 #' asha_bar(as.data.frame(setores_sp), "tipo")
 #'

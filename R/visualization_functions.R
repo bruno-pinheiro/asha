@@ -8,6 +8,7 @@
 #'
 #' @param df Um data.frame
 #' @param x Uma variavel categorica
+#' @param fill Uma variavel categorica
 #'
 #' @details A funcao usa o dplyr para calcular e o ggplot para plotar.
 #'     O parametro \code{x} deve ser uma string e portanto precisar ser
@@ -33,10 +34,11 @@
 #' @import dplyr ggplot2 sf
 #'
 #' @export
-asha_bar <- function(df, x) {
+asha_bar <- function(df, x, fill = NULL) {
   x <- rlang::sym(x)
   prop <- NULL
 
+  if(is.null(fill)) {
   maxProp <-
     df %>%
     filter(!is.na(!!x)) %>%
@@ -50,7 +52,7 @@ asha_bar <- function(df, x) {
     filter(!is.na(!!x)) %>%
     count(!!x) %>%
     mutate(prop = prop.table(n)) %>%
-    ggplot(aes(y=prop, x=!!x)) +
+    ggplot(aes(y = prop, x = !!x)) +
     geom_bar(stat = "identity") +
     scale_y_continuous(labels = scales::percent, limits = c(0, maxProp)) +
     geom_text(aes(label = scales::percent(round(prop, 3))), hjust=-.1) +
@@ -60,6 +62,36 @@ asha_bar <- function(df, x) {
     theme(panel.grid.major.y = element_blank(),
           panel.grid.minor.y = element_blank()) +
     coord_flip()
+  } else {
+    fill <- rlang::sym(fill)
+    maxProp <-
+      df %>%
+      filter(!is.na(!!x)) %>%
+      # group_by(!!fill) %>%
+      count(!!x) %>%
+      mutate(prop = prop.table(n)) %>%
+      summarise(maxProp = max(prop) + .08) %>%
+      as.numeric()
+
+    df %>%
+      as.data.frame() %>%
+      filter(!is.na(!!x)) %>%
+      group_by(!!fill) %>%
+      count(!!x) %>%
+      mutate(prop = prop.table(n)) %>%
+      ggplot(aes(y = prop, x = !!x, fill = !!fill)) +
+      geom_bar(stat = "identity", position = position_dodge()) +
+      geom_text(aes(label = scales::percent(round(prop, 3))),
+                position = position_dodge(width = .9), hjust=-.1) +
+      scale_y_continuous(labels = scales::percent, limits = c(0, maxProp)) +
+      labs(title=paste0("Distribuicao de proporcoes para ", colnames(select(df, !!x))),
+           x = NULL, y = NULL) +
+      theme_bw() +
+      theme(panel.grid.major.y = element_blank(),
+            panel.grid.minor.y = element_blank(),
+            legend.position = "top") +
+      coord_flip()
+  }
 }
 
 # Histograma univariado ###########################
@@ -73,6 +105,7 @@ asha_bar <- function(df, x) {
 #'
 #' @param df Um data.frame
 #' @param x Uma variavel numerica
+#' @param fill Um variavel categorica
 #'
 #' @details A função usa o ggplot para plotar.
 #'     O parametro \code{x} deve ser uma string e portanto precisar ser
@@ -91,12 +124,24 @@ asha_bar <- function(df, x) {
 #' @import ggplot2
 #'
 #' @export
-asha_hist <- function(df, x) {
+asha_hist <- function(df, x, fill = NULL) {
   x <- rlang::sym(x)
 
-  ggplot(as.data.frame(df), aes(x=!!x)) +
-    geom_histogram(col="black",fill="lightblue") +
-    labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
-         x = NULL) +
+  if(is.null(fill)) {
+    ggplot(as.data.frame(df), aes(x=!!x)) +
+      geom_histogram(col="black",fill="lightblue") +
+      labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
+           x = NULL) +
     theme_bw()
+  } else {
+    fill = rlang::sym(fill)
+    ggplot(as.data.frame(df), aes(x=!!x)) +
+      geom_histogram(aes(fill = !!fill),
+                     col="black", alpha = .5, lwd = .2,
+                     position = position_identity()) +
+      labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
+           x = NULL) +
+      theme_bw() +
+      theme(legend.position = "top")
+    }
 }

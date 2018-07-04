@@ -11,5 +11,6 @@ License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: dplyr, ggplot2, sf, tibble, nabor, stplanr, rlang
-Suggests: methods, scales, reshape2, gridExtra
+Suggests: methods, scales, reshape2, gridExtra, ggmap, knitr, rmarkdown
 RoxygenNote: 6.0.1
+VignetteBuilder: knitr

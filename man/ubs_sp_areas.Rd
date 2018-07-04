@@ -4,8 +4,7 @@
 \name{ubs_sp_areas}
 \alias{ubs_sp_areas}
 \title{Areas de cobertura das UBS da cidade de Sao Paulo}
-\format{Um dataset classe sf com os poligonos dos setores censitarios,
-    contendo 456 linhas e 8 variaveis:
+\format{Um data frame com 94765 linhas e 10 colunas
 
 \describe{
   \item{cnes}{Codigo de identificacao da UBS}
@@ -13,8 +12,6 @@
   \item{sts}{Superintendencia de saude responsavel pela unidade}
   \item{crs}{Coordenadoria regional de saude responsavel pela unidade}
   \item{subpref}{Prefeitura regional onde a UBS esta localizada}
-  \item{total_med}{Quantidade de medicos da UBS}
-  \item{total_enf}{Quantidade de enfermeiros da UBS}
   \item{geometry}{Geometria dos polígonos}
 }}
 \usage{

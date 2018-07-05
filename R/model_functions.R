@@ -86,7 +86,6 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
   proximidade <- NULL
   distancia <- NULL
 
-
   df <- list(coords1 = st_coordinates(sf1), coords2 = st_coordinates(sf2))
   df <- nabor::knn(data = df[[1]], query = df[[2]], k = n)
   df <- reshape2::melt(df)
@@ -333,28 +332,37 @@ asha_zones <- function(sf1, sf2, id1, id2) {
 #' @import dplyr
 #'
 #' @export
-asha_ac <- function(df1, pop, area, modelo = NULL) {
+asha_ac <- function(df1, pop, area, model, n) {
   oportunidades <- NULL
   demanda <- NULL
   pop <- enquo(pop)
   area <- enquo(area)
-  if(is.null(modelo)) {
-    return(
+  if(missing(model)) {
+    df1 <-
       df1 %>%
-        group_by(!! area) %>%
-        mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
-        ungroup() %>%
-        mutate(ac = (oportunidades / demanda) * 1000)
-      )
-  } else {
-  modelo <- enquo(modelo)
-  return(
-    df1 %>%
-      group_by(!! modelo, !! area) %>%
+      group_by(!! area) %>%
       mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
       ungroup() %>%
-      mutate(ac = (oportunidades / demanda) * 1000)
-    )
+      mutate(ac = (oportunidades / demanda) * n)
+    return(df1)
+  } else if(missing(n)) {
+    model <- enquo(model)
+    df1 <-
+      df1 %>%
+      group_by(!! model, !! area) %>%
+      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      ungroup() %>%
+      mutate(ac = (oportunidades / demanda))
+    return(df1)
+  } else {
+    model <- enquo(model)
+    df1 <-
+      df1 %>%
+      group_by(!! model, !! area) %>%
+      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      ungroup() %>%
+      mutate(ac = (oportunidades / demanda) * n)
+    return(df1)
   }
 }
 

@@ -1,21 +1,41 @@
 language: r
-cache: packages
 
-addons:
-  apt:
-    sources:
-      - sourceline: 'ppa:opencpu/jq'
-
-    packages:
-      - libgdal-dev
-      - libproj-dev
-      - libgeos-dev
-      - liblwgeom-2.1.2
+r:
+  - release
+  - devel
+  - oldrel
 
 sudo: required
 dist: trusty
+cache:
+  - packages
+  - ccache
 
-before_install:
+r_github_packages:
+  - r-dbi/DBI
+  - r-dbi/RPostgres
+
+addons:
+  postgresql: "9.6"
+  apt:
+    sources:
+      - sourceline: 'ppa:opencpu/jq'
+      - sourceline: 'ppa:ubuntugis/ubuntugis-unstable'
+      - sourceline: 'deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main'
+        key_url: 'https://www.postgresql.org/media/keys/ACCC4CF8.asc'
+    packages:
+      - libprotobuf-dev
+      - protobuf-compiler
+      - libv8-3.14-dev
+      - libjq-dev
+      - libudunits2-dev
+      - libproj-dev
+      - libgeos-dev
+      - libspatialite-dev
+      - libgdal-dev
+      - libjson-c-dev
+      - postgresql-server-dev-9.6
+
 before_install:
   # install postgis from source:
   - wget http://download.osgeo.org/postgis/source/postgis-2.3.2.tar.gz
@@ -23,4 +43,5 @@ before_install:
   - (cd /tmp/postgis-2.3.2 ; ./configure; make; sudo make install)
 
   # activate liblwgeom by:
-  - sudo ldconfig
+- sudo ldconfig
+

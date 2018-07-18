@@ -1,65 +1,58 @@
 ## ----setup, include = FALSE----------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE
 )
 
 ## ------------------------------------------------------------------------
-# Antes de seguir vamos carregar os pacotes que utilizaremos
+# install.packages("devtools") # para o caso do devtools não estar instalado
+# devtools::install_github("bruno-pinheiro/asha") # para instalar o pacote asha
+
+## ------------------------------------------------------------------------
 library(dplyr)
 library(sf)
 library(ggplot2)
 library(stplanr)
 library(asha)
-library(ggsn)
 
 ## ------------------------------------------------------------------------
-tema_mapa <-
-  theme(panel.grid.major = element_line(colour = 'transparent'),
-              panel.grid.minor = element_line(colour = 'transparent'),
-              panel.background = element_rect(fill = 'transparent', colour = NA),
-              plot.background = element_rect(fill = "transparent",colour = NA),
-              axis.text.x = element_blank(),
-              axis.text.y = element_blank(),
-              axis.ticks.x = element_blank(),
-              axis.ticks.y = element_blank(),
-              axis.title = element_blank(),
-              plot.margin = unit(rep(0, 4), "lines"))
-
-## ---- fig.width = 5, fig.height = 6--------------------------------------
-plot(setores_sp[ ,1], lwd = .1, col = "white")
+setores_sp <- setores_sp %>%
+  select(cd_geocodi:dens_demografica)
+head(as.data.frame(setores_sp))
 
 ## ------------------------------------------------------------------------
-glimpse(setores_sp)
+head(as.data.frame(ubs_sp))
+
+## ---- fig.width = 7, fig.height = 5, eval = FALSE------------------------
+#  p1 <- ggplot() +
+#    geom_sf(data = setores_sp, fill = "white", lwd = .1) +
+#    labs(caption = "Setores censitários")
+#    tema_mapa
+#  
+#  p2 <- ggplot() +
+#    geom_sf(data = ubs_sp_areas, , fill = "white", lwd = .3) +
+#    geom_sf(data = ubs_sp, col = "red", lwd = .2) +
+#    labs(caption = "UBS e áreas de UBS")
+#  
+#  do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol = 2))
 
 ## ------------------------------------------------------------------------
-sum(setores_sp$pessoas_setor, na.rm = TRUE)
-
-## ---- fig.width = 5, fig.height = 6--------------------------------------
-ggplot() +
-  geom_sf(data = ubs_sp, col = "red", lwd = .3) +
-  tema_mapa
+head(pessoas_sp)
 
 ## ------------------------------------------------------------------------
-glimpse(ubs_sp)
-
-## ---- fig.width = 5, fig.height = 6--------------------------------------
-ggplot() +
-  geom_sf(data = ubs_sp_areas, lwd = .3) +
-  geom_sf(data = ubs_sp, col = "red", lwd = .2) +
-  tema_mapa
+sum(setores_sp$pessoas_sp, na.rm = TRUE)
 
 ## ------------------------------------------------------------------------
-glimpse(ubs_sp_profissionais)
+head(ubs_sp_profissionais)
 
 ## ------------------------------------------------------------------------
 centroides_sp <-
   st_centroid(setores_sp) %>%
   select(cd_geocodi)
 glimpse(centroides_sp)
-
-## ---- fig.width = 4, fig.height = 5--------------------------------------
-plot(centroides_sp, col = "black", pch = 16, cex = .2)
 
 ## ------------------------------------------------------------------------
 od_euclidiano <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 5)
@@ -90,8 +83,7 @@ p1 <-
   # geom_sf(data = setor) +
   geom_sf(data = ubs, col = "black", cex = 1.2) +
   geom_sf(data = linhas, col = "red", lwd = .2) +
-  geom_sf(data = rotas2, col = "blue") +
-  tema_mapa
+  geom_sf(data = rotas2, col = "blue")
 
 
 cd_setor <- "355030804000023"
@@ -114,8 +106,7 @@ p2 <-
   # geom_sf(data = setor) +
   geom_sf(data = ubs, col = "black", cex = 1.2) +
   geom_sf(data = linhas, col = "red", lwd = .2) +
-  geom_sf(data = rotas2, col = "blue") +
-  tema_mapa
+  geom_sf(data = rotas2, col = "blue")
 
 ## ---- fig.width=7, fig.height=4, fig.align='center'----------------------
 do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol =2))
@@ -233,4 +224,149 @@ rm(erros)
 ## ---- eval = FALSE-------------------------------------------------------
 #  # não executar
 #  teste <- asha_dists(od_euclidiano[60001:60005, ], zonas, modal = "transit", api = "chave_da_api")
+
+## ------------------------------------------------------------------------
+od <-
+  rbind(od_vigente, od_prox) %>%
+  merge(ubs_sp_profissionais, by = "cnes", all.x = TRUE) %>%
+  merge(setores_sp, by = "cd_geocodi", all.x = TRUE) %>%
+  mutate(oportunidades = total_enf + total_med) %>%
+  select(cd_geocodi, cnes, dens_demografica, pessoas_sp,
+         distancias, tempo, total_enf, total_med, oportunidades, modelo)
+  
+summary(od)
+
+## ---- fig.width=7, fig.height=8------------------------------------------
+vars <- od %>% select_if(is.numeric) %>% select(-oportunidades) %>% names()
+plots <- lapply(vars, function(i) asha_hist(od, i, "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+
+## ------------------------------------------------------------------------
+od <- asha_ac(od, pessoas_sp, cnes, modelo, 1000)
+glimpse(od)
+
+## ---- fig.width=7, fig.height=6, warning = FALSE, message = FALSE--------
+vars <- c("oportunidades", "demanda", "ac")
+plots <- lapply(vars, function(i) asha_hist(od, i, fill = "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+
+## ------------------------------------------------------------------------
+od <- asha_av(od, cnes, tempo, pessoas_sp)
+glimpse(od)
+
+## ------------------------------------------------------------------------
+od <-
+  od %>%
+  mutate(minutos_classes = cut(minutos,
+                               breaks = c(0, 5, 10, 15, 30, 60, Inf),
+                               labels = c("< 5", "5 a 10", "10 a 15",
+                                          "15 a 30", "30 a 60", "> 60")),
+         av_prop_decimais = cut(av_prop,
+                                breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1),
+                                labels = c("Até 10%", "10-20%", "20-30%", "30-40%", "40-50%",
+                                           "50-60%", "60-70%", "70-80%", "80-90%", "90-100"))) %>%
+  group_by(modelo) %>%
+  mutate(ac_classes = recode(ntile(ac, 5),
+                             "1" = "Q1", "2" = "Q2",
+                             "3" = "Q3", "4" = "Q4",
+                             "5" = "Q5")) %>%
+  ungroup()
+
+vigente <-
+  od %>%
+  filter(modelo == "vigente") %>%
+  select(-pessoas_sp, -dens_demografica, -modelo, -total_enf, -total_med) %>%
+  rename(cnes_vig = cnes,
+         o_vig = oportunidades, d_vig = demanda,
+         ac_vig = ac, minutos_vig = minutos,
+         av_vig = av, av_prop_vig = av_prop,
+         distancias_vig = distancias, tempo_vig = tempo,
+         ac_c_vig = ac_classes, av_prop_decimais_vig = av_prop_decimais,
+         minutos_classes_vig = minutos_classes)
+
+proximidade <-
+  od %>%
+  filter(modelo == "proximidade") %>%
+  select(-pessoas_sp, -dens_demografica, -modelo) %>%
+  rename(cnes_prox = cnes,
+         o_prox = oportunidades, d_prox = demanda,
+         ac_prox = ac, minutos_prox = minutos,
+         av_prox = av, av_prop_prox = av_prop,
+         distancias_prox = distancias, tempo_prox = tempo,
+         ac_c_prox = ac_classes, av_prop_decimais_prox = av_prop_decimais,
+         minutos_classes_prox = minutos_classes)
+
+setores_sp <-
+  setores_sp %>%
+  merge(vigente, by = "cd_geocodi", all.x = TRUE) %>%
+  merge(proximidade, by = "cd_geocodi", all.x = TRUE)
+
+## ---- fig.width=7, fig.height=4, eval = FALSE----------------------------
+#  p1 <-
+#    setores_sp %>%
+#    group_by(av_vig) %>%
+#    summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
+#    ggplot() +
+#    geom_sf(aes(fill = av_vig), lwd = .2) +
+#    labs(caption = "Modelo vigente")
+#  
+#  p2 <-
+#    setores_sp %>%
+#    group_by(av_prox) %>%
+#    summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
+#    ggplot() +
+#    geom_sf(aes(fill = av_prox), lwd = .2) +
+#    labs(caption = "Modelo de proximidade")
+#  
+#  do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol = 2))
+
+## ---- fig.height=2, fig.width=7------------------------------------------
+od %>%
+  group_by(modelo, av) %>%
+  filter(!is.na(av_prop), !is.na(av)) %>%
+  summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
+  mutate(av_prop = prop.table(pop)) %>%  ggplot(aes(y = av_prop, x = modelo)) +
+  geom_bar(aes(fill = av), stat = "identity") +
+  geom_text(aes(label = scales::percent(round(av_prop, 3)), group = av),
+            position = position_stack(vjust=.5),
+            size = 3, color = "white", fontface = "bold") +
+  xlab(NULL) + ylab("% AV") +
+  theme(legend.position = "top") +
+  coord_flip()
+
+## ------------------------------------------------------------------------
+od$modelo <- factor(od$modelo, levels=rev(levels(factor(od$modelo))))
+
+df <-
+  od %>%
+  filter(!is.na(ac_classes)) %>%
+  group_by(modelo, ac_classes) %>%
+  summarise(AV = median(av_prop, na.rm = TRUE),
+            AC = round(median(ac, na.rm = TRUE), 2)) %>%
+  rename(Intervalos = ac_classes)
+
+df_tab <-
+  df[1:5, 2:4] %>%
+  bind_cols(df[6:10, 3:4])
+
+df_tab <- df_tab %>%
+  mutate(AV_d = scales::percent(AV1 - AV),
+         AV_d = cell_spec(AV_d, color = ifelse(AV_d < 0, "red", "")),
+         AC_d = scales::percent((AC1 / AC) - 1),
+         AC_d = cell_spec(AC_d, color = ifelse(AC_d < 0, "red", "")),
+         AV = scales::percent(AV),
+         AV1 = scales::percent(AV1)) %>%
+  rename(AC = AC1,
+         AV = AV1,
+         AC = AC_d,
+         AV = AV_d)
+
+knitr::kable(df_tab, escape = F, format = "html", booktabs = T,
+      caption = "Medianas dos indicadores: comparação por modelo e quintil de AC",
+      format.args = list(decimal.mark = ',', big.mark = ".")) %>%
+  kableExtra::kable_styling(font_size = 12) %>%
+  kableExtra::add_header_above(c("",
+                   "Modelo Vigente" = 2,
+                   "Modelo Proximidade" = 2,
+                   "Diferenças (Proximidade - Vigente)" = 2))
 

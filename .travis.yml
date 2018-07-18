@@ -1,10 +1,23 @@
 language: r
 cache: packages
 
+r:
+  - release
+  - devel
+
 addons:
   apt:
+    sources:
+      - sourceline: 'ppa:opencpu/jq'
+
     packages:
       - libgdal-dev
       - libproj-dev
       - libgeos-dev
-      
+      - liblwgeom
+
+sudo: required
+dist: trusty
+
+before_install:
+ - sudo ldconfig

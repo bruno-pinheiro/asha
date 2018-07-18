@@ -10,7 +10,7 @@ addons:
       - libgdal-dev
       - libproj-dev
       - libgeos-dev
-      - liblwgeom-dev
+      - liblwgeom-2.1.2
 
 sudo: required
 dist: trusty

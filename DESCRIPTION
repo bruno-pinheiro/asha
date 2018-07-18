@@ -13,7 +13,7 @@ Depends: R (>= 3.4.4)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-Imports: dplyr, ggplot2, sf, stplanr, rlang
-Suggests: methods, scales, reshape2, gridExtra, ggmap, knitr, rmarkdown, nabor, kableExtra
+Imports: dplyr, ggplot2, sf, rlang
+Suggests: stplanr, methods, scales, reshape2, gridExtra, ggmap, knitr, rmarkdown, nabor, kableExtra
 RoxygenNote: 6.0.1
 VignetteBuilder: knitr

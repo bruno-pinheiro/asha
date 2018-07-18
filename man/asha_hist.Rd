@@ -28,7 +28,7 @@ A função usa o ggplot para plotar.
 }
 \examples{
 data("setores_sp")
-asha_hist(as.data.frame(setores_sp), "pessoas_setor")
+asha_hist(as.data.frame(setores_sp), "pessoas_sp")
 
 }
 \seealso{

@@ -137,8 +137,6 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #' modelo_proximidade <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 1)
 #' asha_dists(modelo_proximidade[251:255, ], zonas, "transit", api = api02)
 #'
-#' @import dplyr sf
-#'
 #' @export
 asha_dists <- function(fluxo, zonas, modal = "walking", api) {
   from_addresses = NULL
@@ -170,9 +168,9 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
     }
     return(output <-
              output %>%
-             rename(de = from_addresses, para = to_addresses,
-                    distancias = distances, tempo = duration,
-                    moeda = currency, tarifa = fare))
+             dplyr::rename(de = from_addresses, para = to_addresses,
+                           distancias = distances, tempo = duration,
+                           moeda = currency, tarifa = fare))
     } else if(modal == "walking" & missing(api)) {
       for (linha in 1:nrow(od)) {
         o <- od[linha, 3:4]
@@ -190,9 +188,9 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
       }
       return(output <-
                output %>%
-               rename(de = from_addresses, para = to_addresses,
-                      distancias = distances, tempo = duration,
-                      moeda = currency, tarifa = fare))
+               dplyr::rename(de = from_addresses, para = to_addresses,
+                             distancias = distances, tempo = duration,
+                             moeda = currency, tarifa = fare))
       } else if(modal == "walking") {
         for (linha in 1:nrow(od)) {
           o <- od[linha, 3:4]
@@ -210,9 +208,9 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
         }
         return(output <-
                  output %>%
-                 rename(de = from_addresses, para = to_addresses,
-                        distancias = distances, tempo = duration,
-                        moeda = currency, tarifa = fare))
+                 dplyr::rename(de = from_addresses, para = to_addresses,
+                               distancias = distances, tempo = duration,
+                               moeda = currency, tarifa = fare))
       } else if(missing(modal) & missing(api)) {
             for (linha in 1:nrow(od)) {
               o <- od[linha, 3:4]
@@ -229,9 +227,9 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
             }
             return(output <-
                      output %>%
-                     rename(de = from_addresses, para = to_addresses,
-                            distancias = distances, tempo = duration,
-                            moeda = currency, tarifa = fare))
+                     dplyr::rename(de = from_addresses, para = to_addresses,
+                                   distancias = distances, tempo = duration,
+                                   moeda = currency, tarifa = fare))
         } else {
     for (linha in 1:nrow(od)) {
       o <- od[linha, 3:4]
@@ -249,10 +247,10 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
     }
     }
   return(output <-
-         output %>%
-         rename(de = from_addresses, para = to_addresses,
-         distancias = distances, tempo = duration,
-         moeda = currency, tarifa = fare))
+           output %>%
+           dplyr::rename(de = from_addresses, para = to_addresses,
+                         distancias = distances, tempo = duration,
+                         moeda = currency, tarifa = fare))
 }
 
 
@@ -283,21 +281,19 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
 #' zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
 #' str(zonas)
 #'
-#' @import dplyr sf
-#'
 #' @export
 asha_zones <- function(sf1, sf2, id1, id2) {
   id = NULL
   tipo = NULL
   rbind(
     sf1 %>%
-      select(!!id1) %>%
-      rename(id = !!id1) %>%
-      mutate(tipo = !!id1),
+      dplyr::select(!!id1) %>%
+      dplyr::rename(id = !!id1) %>%
+      dplyr::mutate(tipo = !!id1),
     sf2 %>%
-      select(!!id2) %>%
-      rename(id = !!id2) %>%
-      mutate(tipo = !!id2)
+      dplyr::select(!!id2) %>%
+      dplyr::rename(id = !!id2) %>%
+      dplyr::mutate(tipo = !!id2)
   )
 }
 
@@ -312,7 +308,8 @@ asha_zones <- function(sf1, sf2, id1, id2) {
 #' @param df1 Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.
 #' @param pop Variavel com o total de habitantes da menor unidade territorial
 #' @param area Variavel de id da area de cobertura, para a qual o indicador sera calculado
-#' @param modelo Variavel opcional para a construcao do indicador para modelos diferentes
+#' @param model Variavel opcional para a construcao do indicador para modelos diferentes
+#' @param n Grandeza da taxa (100, 1000, 10000 habitantes...)
 #'
 #' @details Alem das variaveis com numero de habitantes e id de area, que sao passados
 #'          na funcao, o dataframe deve conter a variavel \code{oportunidades}, que
@@ -327,41 +324,39 @@ asha_zones <- function(sf1, sf2, id1, id2) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # asha_ac(df1, pop, area, modelo)
-#'
-#' @import dplyr
+#' # asha_ac(df1, pop, area, model)
 #'
 #' @export
 asha_ac <- function(df1, pop, area, model, n) {
   oportunidades <- NULL
   demanda <- NULL
-  pop <- enquo(pop)
-  area <- enquo(area)
+  pop <- dplyr::enquo(pop)
+  area <- dplyr::enquo(area)
   if(missing(model)) {
     df1 <-
       df1 %>%
-      group_by(!! area) %>%
-      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
-      ungroup() %>%
-      mutate(ac = (oportunidades / demanda) * n)
+      dplyr::group_by(!! area) %>%
+      dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(ac = (oportunidades / demanda) * n)
     return(df1)
   } else if(missing(n)) {
-    model <- enquo(model)
+    model <- dplyr::enquo(model)
     df1 <-
       df1 %>%
-      group_by(!! model, !! area) %>%
-      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
-      ungroup() %>%
-      mutate(ac = (oportunidades / demanda))
+      dplyr::group_by(!! model, !! area) %>%
+      dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(ac = (oportunidades / demanda))
     return(df1)
   } else {
-    model <- enquo(model)
+    model <- dplyr::enquo(model)
     df1 <-
       df1 %>%
-      group_by(!! model, !! area) %>%
-      mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
-      ungroup() %>%
-      mutate(ac = (oportunidades / demanda) * n)
+      dplyr::group_by(!! model, !! area) %>%
+      dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
+      dplyr::ungroup() %>%
+      dplyr::mutate(ac = (oportunidades / demanda) * n)
     return(df1)
   }
 }
@@ -393,45 +388,45 @@ asha_ac <- function(df1, pop, area, model, n) {
 #' @examples
 #' # asha_av(df, id, tempo, pop)
 #'
-#' @import dplyr
-#'
 #' @export
 asha_av <- function(df, id, tempo, pop) {
   av_prop = NULL
   minutos = NULL
   av = NULL
-  id <- enquo(id)
-  pop <- enquo(pop)
-  tempo <- enquo(tempo)
+  id <- dplyr::enquo(id)
+  pop <- dplyr::enquo(pop)
+  tempo <- dplyr::enquo(tempo)
 
   av_x <-
     df %>%
-    mutate(minutos = !! tempo / 60,
-           av = minutos <= 15) %>%
-    filter(!is.na(av)) %>%
-    group_by(!! id, av) %>%
-    summarise(av_prop = sum(!! pop, na.rm = TRUE)) %>%
-    mutate(av_prop = prop.table(av_prop)) %>%
-    ungroup() %>%
-    filter(av == TRUE) %>%
-    select(-av)
+    dplyr::mutate(minutos = !! tempo / 60,
+                  av = minutos <= 15) %>%
+    dplyr::filter(!is.na(av)) %>%
+    dplyr::group_by(!! id, av) %>%
+    dplyr::summarise(av_prop = sum(!! pop, na.rm = TRUE)) %>%
+    dplyr::mutate(av_prop = prop.table(av_prop)) %>%
+    dplyr::ungroup() %>%
+    dplyr::filter(av == TRUE) %>%
+    dplyr::select(-av)
 
-  if(nrow(av_x) < nrow(df %>% distinct(!! id))) {
+  if(nrow(av_x) < nrow(df %>% dplyr::distinct(!! id))) {
     av_x <-
       av_x %>%
-      rbind(list(df %>% filter(!(!! id %in% pull(av_x, !! id))) %>% pull(!! id) %>% unique(), 0))
-    return(
+      rbind(
+        list(df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>% dplyr::pull(!! id) %>% unique(), 0)
+        )
+    df <-
       df %>%
-        mutate(minutos = !! tempo / 60,
-               av = recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
-        left_join(av_x, by = quo_name(id))
-      )
+      dplyr::mutate(minutos = !! tempo / 60,
+             av = dplyr::recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
+      dplyr::left_join(av_x, by = quo_name(id))
+    return(df)
   } else {
-    return(
+    df <-
       df %>%
-        mutate(minutos = !! tempo / 60,
-               av = recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
-        left_join(av_x, by = quo_name(id))
-      )
+      dplyr::mutate(minutos = !! tempo / 60,
+                    av = dplyr::recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
+      dplyr::left_join(av_x, by = quo_name(id))
+    return(df)
   }
 }

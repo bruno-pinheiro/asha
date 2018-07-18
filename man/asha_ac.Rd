@@ -4,7 +4,7 @@
 \alias{asha_ac}
 \title{Indicador AC}
 \usage{
-asha_ac(df1, pop, area, modelo = NULL)
+asha_ac(df1, pop, area, model, n)
 }
 \arguments{
 \item{df1}{Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.}
@@ -13,7 +13,9 @@ asha_ac(df1, pop, area, modelo = NULL)
 
 \item{area}{Variavel de id da area de cobertura, para a qual o indicador sera calculado}
 
-\item{modelo}{Variavel opcional para a construcao do indicador para modelos diferentes}
+\item{model}{Variavel opcional para a construcao do indicador para modelos diferentes}
+
+\item{n}{Grandeza da taxa (100, 1000, 10000 habitantes...)}
 }
 \value{
 Retorna o dataframe indicado no argumento \code{df1} acrescidas as colunas demanda
@@ -32,7 +34,7 @@ Alem das variaveis com numero de habitantes e id de area, que sao passados
          area em cada modelo.
 }
 \examples{
-# asha_ac(df1, pop, area, modelo)
+# asha_ac(df1, pop, area, model)
 
 }
 \author{

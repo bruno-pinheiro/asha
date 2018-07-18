@@ -1,13 +1,26 @@
 ---
-title: "Analisando a atenção básica à saúde em São Paulo com o pacote asha (versão inicial)"
-author: "Bruno Pinheiro"
+title: Construção de indicadores de acessibilidade espacial à saúde com o pacote asha
+  (versão inicial)
+author:
+- affiliation: Escola de Artes, Ciências e Humanidades da Universidade de São Paulo
+  email: bruno.pinheiro.oliveira@usp.br
+  name: Bruno Pinheiro^[Estudante do curso de Gestão de Políticas Públicas da EACH/USP]
+- affiliation: Escola de Artes, Ciências e Humanidades da Universidade de São Paulo
+  email: alexandre.leichsenring@usp.br
+  name: Alexandre Ribeiro Leichsenring^[Professor do curso de Gestão de Políticas
+    Públicas da EACH/USP]
 date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
-    toc: true
-    number_sections: true
-vignette: >
-  %\VignetteIndexEntry{Análise da acessibilidade espacial à saúde}
+    number_sections: yes
+    toc: yes
+  html_notebook:
+    number_sections: yes
+    toc: yes
+subtitle: Exemplo a partir do caso da cidade de São Paulo
+bibliography: referencias.bib
+vignette: |
+  %\VignetteIndexEntry{Indicadores de acessibilidade espacial à saúde}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -15,19 +28,39 @@ vignette: >
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE
 )
 ```
 
 # Introdução
 
-O pacote em questão é produto de um projeto de pesquisa que realizou a análise da acessibilidade espacial à atenção básica de saúde no município de São Paulo. Ele compila um grupo de funções que viabilizam a reprodução do procedimento adotado para a modelagem, a geração e análise de dois indicadores: acessibilidade competitiva (AC) e acessibilidade viável (AV).
+O R tem sido uma base computacional bastante utilizada para estudos e pesquisas na área de saúde. As aplicações mais tradicionais neste campo são pacotes voltados à análise epidemiológica como `epitools`, `epi`, `epiR`, `epidisplay` [@epi2011, @stevenson2013epir], entre outros. Com o crescimento de fontes de dados abertos, têm surgido também uma série de pacotes com a finalidade de viabilizar acesso a respositórios de dados em saúde como o `fingertips`, o `WHO` e o `datasus`. Ainda mais recentemente, com a popularização do *machine learning* e do *big data*, começam a surgir pacotes para aplicações de inteligência artificial em saúde como o `healthcareai`.
 
-A análise espacial destes indicadores articula no território dimensões de disponibilidade e de acessibilidade, retratando um determinado acoplamento entre a infraestrutura de oferta dos sistemas de saúde e a população. Esta vinheta apresenta como usar o pacote para replicar este tipo de análise.
+Um campo de estudos em saúde que vem crescendo e se beneficia fortemente dos recentes desenvolvimentos na área de computação e de disponibilidade de dados é o da acessibilidade espacial. Trata-se de uma área essencialmente interdisciplinar, de diálogo entre as ciências humanas e exatas, articulando os campos da saúde pública, do planejamento urbano e da mobilidade urbana. De tal forma, uma gama variada de abordagens podem valer-se de estudos de análise espacial, assim como é uma relevante ferramenta para melhores tomadas de decisão.
+
+Pacotes como o `stplanr`, que permite a obtenção de dados de mobilidade, a realização de análise de origem-desstino e a construção de modelos e redes voltados ao planejamento dos transportes, são extremamente úteis para este tipo de tarefa. Ainda assim, uma das potencialidades dos pacotes feitos especificamente para certos tipos de análise é a possibilidade de replicabilidade e padronização dos métodos, como o fazem os pacotes para análises epedemiológicas citados acima. Neste sentido, há uma lacuna de pacotes no R para análise de acessibilidade espacial à saúde.
+
+O pacote `asha` é produto do projeto de pesquisa "Mobilidade urbana e direito à cidade na cidade de São Paulo", desenvolvido na Escola de Artes, Ciências e Humanidades da Universidade de São Paulo, no contexto da graduação em Gestão de Políticas Públicas. A investigação fundamenta-se na lógica do direito à cidade e parte do pressuposto de que a acessibilidade na cidade é composta pelo entrelaçamento de uma série de "acessibilidades temáticas", que abrangem a educação, a saúde, o lazer, a cultura, o esporte, o trabalho e outros serviços.
+
+Como uma primeira etapa, a pesquisa analisou a acessibilidade espacial à atenção básica de saúde no município de São Paulo, por meio de dois indicadores criados a partir de dados públicos: acessibilidade competitiva (AC) e acessibilidade viável (AV). A metodologia permite a análise de padrões de acessibilidade espacial em diferentes modelos territoriais de atenção básica, podendo ser útil para uma melhor compreensão das dinâmicas de acessibilidade estabelecidas pela infraestrutura de distribuição das capacidades de atendimento.
+
+O pacote `asha` compila funções que viabilizam a reprodução do procedimento adotado para a modelagem, a geração e análise dos indicadores. Esta vinheta apresenta como usar o pacote a partir da metodologia e dos dados utilizados no estudo, visando contribuir para a replicabilidade deste tipo de análise.
 
 ## O pacote `asha`
 
-O pacote auxiliar na realização computacional das seguintes tarefas envolvidas na análise da acessibilidade espacial:
+```{r}
+# Antes de seguir vamos carregar os pacotes que utilizaremos
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(stplanr)
+library(asha)
+```
+
+A proposta do pacote é auxiliar na realização computacional das seguintes tarefas envolvidas na análise da acessibilidade espacial:
 
 (a) Levantamento de dados de rota
 
@@ -39,21 +72,21 @@ O pacote auxiliar na realização computacional das seguintes tarefas envolvidas
 
 Dada a disponibilidade de um conjunto particular de dados, o objetivo das funções do pacote é viabilizar a realização deste fluxo.
 
-## Funções e classes
+## Funções
 
-Basicamente o pacote lida com duas classes de dados: data frames e objetos espaciais do tipo `sf` (*simple features*). O pacote `sf` permite integrar a análise espacial de forma automática ao `tidyverse`, de modo que é possível valer-se das funcionalidades do `dplyr`, do `ggplot2` e outros pacotes que integram a linguagem `tidy` no R.
+Para construir os indicadores serão utilizadas as seguintes funções do pacote `asha`:
+
+**Levantamento de dados de mobilidade**
+
+* `asha_dists`
 
 **Modelagem da acessibilidade espacial**
+
+* `asha_zones`
 
 * `asha_intersect`
 
 * `asha_nn`
-
-**Levantamento de dados de mobilidade**
-
-* `asha_zones`
-
-* `asha_dists`
 
 **Geração de indicadores**
 
@@ -61,109 +94,158 @@ Basicamente o pacote lida com duas classes de dados: data frames e objetos espac
 
 * `asha_av`
 
+Além disso, utilizaremos as funções abaixo para visualizar rapidamente os dados.
+
 **Visualização dos dados**
 
 * `asha_bar`
 
 * `asha_hist`
 
-* `asha_boxplot`
+É possível consultar a documentação de referência de qualquer função entrando com o comando `?nome_da_funcao` ou `help(nome_da_funcao)` no console do R. Por exemplo, para visitar as referências da função `asha_ac` utiliza-se o comando`?asha_ac`.
 
-* `asha_dens`
+## Classes
+
+Basicamente o pacote lida com duas classes de dados: data frames e objetos espaciais do tipo `sf` (*simple features*). 
+
+Para representação espacial, o R dispõe de duas linguagens principais. A mais tradicional é derivada do pacote `sp`. Mais recentemente, porém, o pacote `sf` surgiu para facilitar a análise espacial integrando este tipo de representação à estrutura de dados do `tidyverse`, de modo que é possível valer-se das funcionalidades do `dplyr`, do `ggplot2` e outros pacotes que integram a linguagem `tidy` no R.
+
+Função           | Formato *input*   | Formato *output*
+-----------------|-------------------|-----------------------------
+`asha_zones`     | dois objetos `sf` | um objeto `sf`
+`asha_intersect` | dois objetos `sf` | um `data frame`
+`asha_nn`        | dois objetos `sf` | um `data frame`
+`asha_ac`        | um `data frame`   | uma coluna no `data frame`
+`asha_av`        | um `data frame`   | três colunas no `data frame`
+
+Table: Classes dos dados de input e ouput nas funções do pacote `asha`
+
+# Metodologia
+
+A a análise e a construção dos indicadores foi feita por meio da estruturação de modelos territoriais baseados em matrizes de origem e destino (OD). Concebe-se como origem os diversos locais que representam pontos de partida da população que conforma a demanda das unidades de saúde. Estes pontos podem ser a localização das residências das pessoas ou o centroide de uma determinada área. No estudo utilizamos os centroides dos setores censitários como referência para os pontos de origem.
+
+Já o destino é a unidade de saúde que recebe a população referente a um determinando conjunto de pontos de origem. Com foco na análise da atenção básica de saúde e sendo o estudo de corte transversal, foram as 455 Unidades Básicas de Saúde (UBS) em funcionamento na cidade de São Paulo no momento em que os dados foram coletados (setembro de 2017).
+
+A partir desta modelagem é possível identificar dados de rotas para as conexões OD, assim como atribuir dados relativos à capacidade de atendimento para cada uma delas.
+
+No caso desta pesquisa, os dados de rota foram usados apenas para delimitar o critério de acessibilidade viável, dada a característica do sistema de saúde, que delimita áreas de abrangência para as UBS e determina qual unidade deve ser frequentada pela população a partir do endereço residencial. Para casos onde o sistema permita sobreposição territorial da oferta, porém, é possível estabelecer territórios de acesso baseado no tempo de percurso e gerar indicadores cumulativos.
 
 ## Dados fundamentais
 
-Antes de seguir vamos carregar os pacotes que utilizaremos:
+Para utilizar o pacote `asha` é necessário ter em mãos um conjunto específico de bases de dados a respeito do território e dos serviços de saúde pública. Por hora o pacote não conta com funções para a obtenção direta dos dados, por isto é preciso obtê-los previamente junto às suas respectivas fontes.
+
+As bases de dados utilizadas na análise da cidade de São Paulo já estão incorporadas ao pacote e podem servir de exemplo para os dados que deverão ser obtidos para viabilizar a análise. Para ver todos os dados disponíveis no pacote digite `data(package = "asha")` no console`.
+
+No caso, a pesquisa baseou-se nas seguintes bases de dados:
+
+### Dados espaciais
+
+#### Malha de setores censitários da cidade de São Paulo
+
+Os setores censitários são a menor unidade cadastral do censo demográfico realizado pelo IBGE a cada 10 anos. São pequenas unidades territorias contíguas que cobrem mais ou menos um quarteirão e são convergentes com os limites político-administrativos do Brasil, permitindo análises espaciais com um nível substancial de resolução espacial.
+
 
 ```{r}
-library(dplyr)
-library(sf)
-library(ggplot2)
-library(asha)
+setores_sp <- setores_sp %>%
+  select(cd_geocodi:dens_demografica)
+head(as.data.frame(setores_sp))
 ```
 
-Para utilizar o pacote `asha` é necessário levantar previamente dados demográficas e sobre os equipamentos de saúde, georreferenciados. No caso, a pesquisa baseou-se nas seguintes bases de dados:
+Cada polígono no mapa corresponde a um setor censitário. O dataset `setores_sp` é um objeto de classe `sf`, contendo a malha de setores e um conjunto de variáveis relacionadas a cada setor censitário, que na cidade de São Paulo são 18.953.
 
-* `setores_sp`: Malha de setores censitários da cidade de São Paulo
+#### Localização de estabelecimentos de saúde
 
-```{r, fig.width = 5, fig.height = 6}
-plot(setores_sp[ ,1], lwd = .1, col = "white")
-# ou
-# ggplot(setores_sp) +
-#   geom_sf(lwd = .1, fill = "white") +
-#   theme_light()
-```
+É preciso ter a localização georreferenciada das unidades de saúde. Assim esta base deve ser um conjunto de pontos espaciais, cada um representando uma Unidade Básica de Saúde da cidade de São Paulo.
 
-Trata-se de um objeto espacial de classe `sf`, contendo a malha de setores e um conjunto de variáveis relacionadas a cada setor censitário, que são 18.953.
+Esta base indica os "pontos de destino" na nossa pesquisa, isto é, os pontos que são objetivo final do percurso das pessoas entre suas residências e o provedor do serviço. No dataset `ubs_sp` cada UBS está referenciada pelo seu código no Cadastro Nacional de Estabelecimentos de Saúde (CNES).
 
 ```{r}
-glimpse(setores_sp)
-```
-
-A variável `pessoas_setor` representa o número de moradores em domicílios particulares e coletivos. Esta variável foi importada à malha geográfica a partir do arquivo `Domicilio02_SP1.csv`, que consta nos resultados do universo do Censo 2010 agregados por setor censitário, também disponibilizados pelo IBGE.
-
-* `ubs_sp`: Localização das UBS da cidade de Sao Paulo
-
-```{r, fig.width = 5, fig.height = 6}
-ggplot() +
-  geom_sf(data = ubs_sp, col = "red", lwd = .3) +
-  theme_light()
-```
-
-Consiste num conjunto de pontos georreferenciados, cada um representando uma Unidade Básica de Saúde da cidade de São Paulo. Esta base indica os "pontos de destino" na nossa pesquisa, isto é, os pontos que são objetivo final do percurso das pessoas entre suas residências e o provedor do serviço de atenção básica de saúde. Cada UBS está referenciada pelo seu código no Cadastro Nacional de Estabelecimentos de Saúde (CNES).
-
-```{r}
-glimpse(ubs_sp)
+head(as.data.frame(ubs_sp))
 ```
  
-Esta base de dados é fruto de uma atualização no shape file de UBS disponibilizados no Portal de Dados Abertos do Município de São Paulo e também no Portal GeoSampa, que envolveu cruzamento com uma base mais recente de áreas de UBS e geocodificação de endereços.
+Esta base de dados é fruto de uma atualização no shapefile de UBS disponibilizados no [Portal de Dados Abertos](http://dados.prefeitura.sp.gov.br/) do Município de São Paulo e também no [Portal GeoSampa](http://geosampa.prefeitura.sp.gov.br/), que envolveu cruzamento com uma base mais recente de áreas de UBS e geocodificação de endereços.
 
-* `ubs_sp_areas`: Áreas de cobertura das UBS da cidade de São Paulo
+#### Áreas de cobertura das UBS da cidade de São Paulo
 
-Cada UBS é responsável por atender a população residente num território determinado pela sua área de cobertura.
-
-```{r, fig.width = 5, fig.height = 6}
-ggplot() +
-  geom_sf(data = ubs_sp_areas, lwd = .3) +
-  geom_sf(data = ubs_sp, col = "red", lwd = .2) +
-  theme_light()
-```
+Em São Paulo, cada UBS é responsável por atender a população residente num território determinado pela sua área de cobertura. Assim, além da localização exata do equipamento, a gestão da saúde tem de decidir também qual a abrangência territorial de cada UBS, criando um uma malha geográfica da atenção básica, armazenada no dataset `ubs_sp_areas`.
 
 Embora esta base não esteja disponível para acesso via transparência ativa, foi possível obtê-la a partir de pedido de acesso à informação impetrado para a Secretaria Municipal de Saúde da Prefeitura de São Paulo.
 
-* `ubs_sp_profissionais`: Total de medicos e enfermeiros nas UBS de São Paulo
+```{r, fig.width = 7, fig.height = 5, eval = FALSE}
+p1 <- ggplot() +
+  geom_sf(data = setores_sp, fill = "white", lwd = .1) +
+  labs(caption = "Setores censitários")
+  tema_mapa
 
-```{r}
-glimpse(ubs_sp_profissionais)
+p2 <- ggplot() +
+  geom_sf(data = ubs_sp_areas, , fill = "white", lwd = .3) +
+  geom_sf(data = ubs_sp, col = "red", lwd = .2) +
+  labs(caption = "UBS e áreas de UBS")
+
+do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol = 2))
 ```
 
-É um data frame com três colunas, que apontam o total de médicos e de enfermeiros trabalhando em cada UBS, identificadas pelo código CNES.
+<center>
+![](/home/brunopinheiro/R/pacotes/asha/vignettes/mapa_setores.png) ![](/home/brunopinheiro/R/pacotes/asha/vignettes/mapa_ubs_areas.png)
+</center>
+
+### Dados tabulares
+
+#### Demanda por serviços de saúde
+
+A demanda por serviços de saúde $(D)$ é quantificada a partir do número de moradores residentes nos setores censitários associados a cada unidade de saúde. Para gerar este indicador foi utilizada a variável `V002` do arquivo `Domicilio02_SP1.csv`, que consta nos resultados do universo do Censo 2010 agregados por setor censitário, também disponibilizados pelo IBGE.
+
+```{r}
+head(pessoas_sp)
+```
+
+O objeto pessoas_sp é a variável demográfica base do cálculo de demanda, com o número de moradores em domicílios particulares e coletivos. A soma dos habitantes de cada um dos setores censitários resulta no total de habitantes da cidade, que era de mais de 11 milhões de pessoas em 2010, conforme pode-se ver abaixo.
+
+```{r}
+sum(setores_sp$pessoas_sp, na.rm = TRUE)
+```
+
+#### Capacidade de atendimento dos equipamentos de saúde
+
+Estes dados devem ser relativos ao total de profissionais disponíveis para atender a demanda da unidade de saúde. No caso, a pesquisa considerou o número de medicos e enfermeiros nas UBS de São Paulo. Os foram obtidos no CNES, considerando todas as especialidades, e estão compilados em `ubs_sp_profissionais`.
+
+```{r}
+head(ubs_sp_profissionais)
+```
+
+Trata-se de um data frame com três colunas, que apontam o total de médicos e de enfermeiros trabalhando nas UBS em setembro de 2017. Cada UBS é identificada pelo seu código CNES. Os dados da oferta de profissionais são utilizados para contabilizar as oportunidades ($O$), entendidas como a soma de médicos e enfermeiros à disposição para atender a população residente na área de cobertura da UBS nas malhas territoriais possíveis.
 
 **Resumindo**
 
-* Utilizamos a classe `sf` para representar os dados espaciais, portanto o pacote não funciona com objetos de classe `sp`.
+* O pacote `asha` utiliza a classe `sf` para representar os dados espaciais, portanto não funciona com objetos de classe `sp`.
 
 * É preciso levantar previamente:
 
     + Uma malha territorial para os dados demográficos (por exemplo, setores censitários)
     + Uma malha territorial da saúde (que também pode ser gerada a partir dos setores censitários, em caso de não existir)
     + Pontos de localização dos estabelecimento de saúde georreferenciados
-    + Dados demográficos capazes de referenciar territorialmente
-    + Dados sobre a quantidade de profissionais nos estabelecimentos de saúde
+    + Total de habitantes, por setor censitário
+    + Quantidade de médicos e enfermeiros nos estabelecimentos de saúde
 
-# Identificar dados de rotas
+A partir destas informações é possível estruturar objetos do tipo Origem-Destino e também levantar dados de tempo e distância de caminhada entre as UBS e os setores censitários.
 
-Queremos estabelecer a proximidade em termos de distância de caminhada e não a distância euclidiana.
+# Obter distâncias e tempos de viagem
 
-Um possibilidade é utilizar diretamente a função `stplanr::dist_google`. Ela consulta a *Google Distance Matrix API* para todas as conexões possíveis entre pontos de origem e de destino, gerando um data frame contendo as informações de rota. No caso são 19553 centroides e 456 UBS, o que daria um total de 8.642.568 consultas.
+Tradicionalmente estudos deste tipo baseiam-se na distância euclidiana, que indica a distância em linha reta entre um ponto e outro. Ainda que possa ser relativamente representativa, esta medida não compreende a real mobilidade das pessoas pela cidade, que segue rotas determinadas pelas ruas e barreiras existentes no território.
 
-Esta opção dá a flexibilidade de, após proceder com todas as consultas, poder analisar todos os modelos territoriais possíveis a partir da relação entre setores censitários e UBS. Para pequenos municípios esta pode ser uma alternativa viável, porém seria extremamente cara, dados os custos cobrados pelo Google para uso massivo da API, já que seria inviável realizar gratuitamente com as limitações impostas pelo serviço (que é de 2500 consultas diárias).
+Atualmente há serviços, como a *Google Distance Matrix API*, que podem ser consultados para obter dados relativos à rotas de mobilidade entre pontos georreferenciados. No R, uma possibilidade para esta tarefa é utilizar a função `stplanr::dist_google`. Ela consulta a *Google Distance Matrix API*, mas o faz para todas as conexões possíveis entre pontos de origem e de destino indicados à função. No caso são 18.953 centroides e 456 UBS, o que daria um total de 8.642.568 consultas.
 
-Uma opção um pouco menos flexível, mas eficiente dependendo dos objetivos, é supor que a UBS com a menor distância de caminhada do centroide do setor censitário está dentro de um número determinado de UBS mais próximas em termos euclidianos. Consideramos razoável supor que o menor tempo de caminhada está entre as 5 menores distâncias euclidianas. Este método os passos a seguir:
+Esta opção dá a flexibilidade de, após proceder com as consultas, poder analisar todos os modelos territoriais possíveis a partir da relação origem-destino. Para pequenos municípios esta pode ser uma alternativa viável. Para grandes centrois urbanos como a cidade de São Paulo, porém, seria extremamente cara, dados os custos cobrados pelo Google para uso massivo da API. Seria inviável realizar gratuitamente com as limitações impostas pelo serviço (que é de 2500 consultas diárias).
 
-## Criar centroides
+Uma opção um pouco menos flexível, mas eficiente dependendo dos objetivos, é realizar a consulta apenas para um conjunto previamente determinado de conexões OD baseadas na distância euclidiana. Consideramos, por exemplo, que é razoável supor que o menor tempo de caminhada estará entre as 5 UBS como menores distâncias euclidianas. 
 
-Os setores censitários representam a origem e cada UBS representa o destino de uma partição de setores censitários. Para computar as distâncias adotaremos o centroide como o ponto médio de cada setor censitário.
+Este método implica nos passos a seguir, utilizando as funções do pacote `asha`:
+
+## Determinar os pontos de origem
+
+No caso deste estudo seria ideal poder estabelecer rotas a partir de cada residência até a UBS. Sendo isto inviável, adotamos os centroides como o ponto de origem. O centroides representam a origem e cada UBS representa o destino de uma partição de setores censitários.
+
+Ainda não temos os centroides, apenas os polígonos dos setores censitários. Os centroides podem ser facilmente identificados com `sf::st_centroid()`.
 
 ```{r}
 centroides_sp <-
@@ -172,24 +254,20 @@ centroides_sp <-
 glimpse(centroides_sp)
 ```
 
-Deixamos apenas a variável de identificação do setor, já que as demais não serão utilizadas com os centroides.
+Estocamos os centroides no objeto `centroides_sp` e deixamos apenas a variável de identificação do setor, já que as demais são dispensáveis aqui. Agora já temos os pontos de origem e os pontos de destino e podemos avançar para determinar um OD baseado nas distâncias euclidianas.
 
-```{r, fig.width = 3, fig.height = 4}
-plot(centroides_sp, col = "black", pch = 16, cex = .2)
-# ou
-# ggplot(centroides_sp) +
-#   geom_sf(lwd = .2) +
-#   theme_light()
-```
+## Determinar OD por proximidade euclidiana
 
-## Combinar UBS e setor censitário por proximidade euclidiana
+Conforme explicado acima, queremos identificar as 5 UBS mais próximas de cada setor censitário, supondo que entre elas encontraremos a UBS mais próxima em termos de mobilidade à pé. A função `asha_nn` realiza a tarefa de encontrar as $n$ menores distâncias euclidianas entre dois conjuntos de pontos espaciais.
 
 ```{r}
 od_euclidiano <- asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 5)
 glimpse(od_euclidiano)
 ```
 
-Neste caso o total de pares possíveis é 94.765, sendo este o total de consultas que serão feitas à API. A consulta precisa ser feita para cada uma das linhas do dataset e não todos para todos, como seria feito com `stplanr::dist_google`. A função `asha_dists` é baseada na `dist_google` e dá conta desta tarefa. Além de consultar as combinações linha a linha e não todos para todos, esta tem a vantagem de lidar automaticamente com o erro retornado quando a API não consegue estabelecer uma rota entre dois pontos, adicionando uma linha em branco e continuando a consulta. No caso do pacote `stplanr`, o erro para o processo.
+O resultado é este data frame com 94.765 pares possíveis (5 por setor censitário), sendo este o total de consultas que serão feitas à API. A consulta precisa ser feita para cada uma das linhas do dataset e não todos para todos, como seria feito com `stplanr::dist_google`.
+
+A função `asha_dists` é baseada na `dist_google` e dá conta desta tarefa. Além de consultar as combinações linha a linha e não todos para todos, esta tem a vantagem de lidar automaticamente com o erro retornado quando a API não consegue estabelecer uma rota entre dois pontos, adicionando uma linha em branco e continuando a consulta. No caso do pacote `stplanr`, o erro para o processo.
 
 ## Preparar base de zonas
 
@@ -204,9 +282,64 @@ zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
 glimpse(zonas)
 ```
 
-Agora é possível efetuar a consulta. A função por padrão busca os resultados para o modal caminhada ("walking"), que não necessita de chave de API. Portanto basta indicar como primeiro argumento o objeto OD contendo o fluxo e como segundo argumento o objeto zonas criado na etapa anterior, com os pontos espaciais de centroides e UBS.
+Com o objeto `zonas` será possível calcular as distâncias e tempos de rota. Para ilustrar, podemos visualizar as 5 UBS mais próximas de um setor aleatório.
+
+```{r}              
+cd_setor <- "355030871000027"
+cd_ubs <- od_euclidiano %>% filter(cd_geocodi == cd_setor) %>% pull(cnes)
+
+ubs <- ubs_sp %>% filter(cnes %in% cd_ubs) 
+
+df <- data.frame(cd_geocodi = cd_setor,
+                 cnes = cd_ubs)
+
+linhas <- stplanr::od2line(df, zonas)
+linhas2 <- as(st_transform(linhas, 4326), "Spatial")
+rotas <- stplanr::line2route(linhas2, route_fun = route_osrm)
+rotas2 <- st_transform(st_as_sf(rotas), st_crs(linhas))
+
+p1 <-
+  ggplot() +
+  geom_sf(data = ubs_sp_areas %>% filter(cnes %in% cd_ubs), fill = "white", col = "lightgrey") +
+  geom_sf(data = setores_sp %>% filter(cd_geocodi %in% cd_setor), fill = "yellow", lwd = .2) +
+  # geom_sf(data = setor) +
+  geom_sf(data = ubs, col = "black", cex = 1.2) +
+  geom_sf(data = linhas, col = "red", lwd = .2) +
+  geom_sf(data = rotas2, col = "blue")
+
+
+cd_setor <- "355030804000023"
+cd_ubs <- od_euclidiano %>% filter(cd_geocodi == cd_setor) %>% pull(cnes)
+
+ubs <- ubs_sp %>% filter(cnes %in% cd_ubs) 
+
+df <- data.frame(cd_geocodi = cd_setor,
+                 cnes = cd_ubs)
+
+linhas <- stplanr::od2line(df, zonas)
+linhas2 <- as(st_transform(linhas, 4326), "Spatial")
+rotas <- stplanr::line2route(linhas2, route_fun = route_osrm)
+rotas2 <- st_transform(st_as_sf(rotas), st_crs(linhas))
+
+p2 <-
+  ggplot() +
+  geom_sf(data = ubs_sp_areas %>% filter(cnes %in% cd_ubs), fill = "white", col = "lightgrey") +
+  geom_sf(data = setores_sp %>% filter(cd_geocodi %in% cd_setor), fill = "yellow", lwd = .2) +
+  # geom_sf(data = setor) +
+  geom_sf(data = ubs, col = "black", cex = 1.2) +
+  geom_sf(data = linhas, col = "red", lwd = .2) +
+  geom_sf(data = rotas2, col = "blue")
+```
+
+```{r, fig.width=7, fig.height=4, fig.align='center'}
+do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol =2))
+```
+
+Os mapas acima mostram as UBS localizadas mais perto de dois setores censitários aleatórios. Em amarelo vemos o setor censitário, sendo que as linhas conectam ao seu centroide. Os pontos pretos são as UBS mais próximas deste setor, em suas respectivas áreas de abrangência, delimitadas pelas linhas cinzas. As linhas vermelha e azul indicam a conexão euclidiana e a rota a ser efetivamente percorrida, respectivamente.
 
 ## Levantar dados de rotas
+
+Agora vamos consultar a API e, para cada setor, identificar os dados das 5 menores rotas à pé. Isto pode ser feito com a função `asha_dists`, que por padrão busca os resultados para o modal caminhada ("*walking*") e não necessita de chave de API. Portanto basta indicar como primeiro argumento o objeto OD contendo o fluxo (`od_euclidiano`) e como segundo argumento o objeto `zonas`, criado na etapa anterior, com os pontos espaciais de centroides e UBS.
 
 ```{r, eval = FALSE}
 # não executar
@@ -221,21 +354,20 @@ glimpse(ubs_sp_mobilidade)
 
 # Modelar a acessibilidade espacial
 
+Com os dados presentes nas variáveis `distancias` e `tempo` da base `ubs_sp_mobilidade` é possível modelar a acessibilidade para o modelo territorial vigente e para o modelo de proximidade, que representa o nosso experimento. 
+
 ## Modelo vigente
 
-Aqui é preciso identificar os setores censitarios associados as áreas de UBS. Um setor é dado como dentro de uma área de UBS se o seu centroide está no interior da área.
+Aqui é preciso identificar os setores censitários associados às áreas de UBS. Um setor é dado como dentro de uma área de UBS se o seu centroide está no interior da área. Por isso, uma área de UBS é formada pela partição de setores censitários vinculados a ela, o que muda conforme muda o modelo territorial.
+
+Para identificar quais setores estão relacionadas a cada UBS no modelo vigente, realizamos uma intersecção entre `ubs_sp_areas` e `centroides_sp`.
 
 ```{r}
 od_vigente <- asha_intersect(ubs_sp_areas, centroides_sp, "cnes", "cd_geocodi")
 glimpse(od_vigente)
-
-# load("~/R/asha/data-raw/setores_ubs.rda")
-# table(od_vigente %>% arrange(cd_geocodi, cnes) == setores_em_areas_ubs %>% arrange(CD_GEOCODI, CNES))
-# table(paste0(od_vigente$cd_geocodi, od_vigente$cnes) %in% paste0(setores_em_areas_ubs$CD_GEOCODI, setores_em_areas_ubs$CNES))
-
 ```
 
-O resultado tem 18948 setores, de 18953. Os cinco nao incluidos não estão dentro de nenhuma área de ubs, por diferençaas na geometria. Abaixo identico os setores ausentes e busco no mapa as UBS correspondentes, para depois incluir no dataset.
+O resultado tem 18.948 setores, de 18.953. Os cinco nao incluidos não estão dentro de nenhuma área de UBS, por diferenças na geometria das malhas espaciais de setores e de áreas de UBS. Abaixo estão os setores ausentes e as UBS correspondentes (encontradas a partir de análise dos mapas), que são incluídos no dataset.
 
 ```{r}
 od_vigente <-
@@ -281,6 +413,26 @@ od_vigente <-
                modelo = "vigente")
     )
 ```
+
+
+```{r, fig.width=5, fig.height=6}
+# linhas <- stplanr::od2line(od_vigente, zonas)
+# 
+# st_write(linhas, "linhas.shp")
+# 
+# st_write(ubs_sp_areas, "ubs_sp_areas.shp")
+# st_write(ubs_sp, "ubs_sp.shp")
+# 
+# ggplot() +
+#   geom_sf(data = ubs_sp_areas) +
+#   # geom_sf(data = setores_sp %>% filter(cd_geocodi %in% cd_setor), fill = "yellow", lwd = .2) +
+#   # geom_sf(data = setor) +
+#   # geom_sf(data = ubs, col = "black", cex = 1.2) +
+#   geom_sf(data = linhas, lwd = .2, aes(colour = tempo / 60)) +
+#   # geom_sf(data = rotas2, col = "blue") +
+#   tema_mapa
+```
+
 
 ## Modelo de proximidade
 
@@ -369,99 +521,79 @@ od <-
   merge(ubs_sp_profissionais, by = "cnes", all.x = TRUE) %>%
   merge(setores_sp, by = "cd_geocodi", all.x = TRUE) %>%
   mutate(oportunidades = total_enf + total_med) %>%
-  select(cd_geocodi, cnes, dens_demografica, pessoas_setor,
+  select(cd_geocodi, cnes, dens_demografica, pessoas_sp,
          distancias, tempo, total_enf, total_med, oportunidades, modelo)
   
 summary(od)
 ```
 
+```{r, fig.width=7, fig.height=8}
+vars <- od %>% select_if(is.numeric) %>% select(-oportunidades) %>% names()
+plots <- lapply(vars, function(i) asha_hist(od, i, "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
+```
+
 # Calcular indicadores
+
+## Indicadores de acessiblidade espacial
+
+A acessibilidade espacial é uma ferramenta cada vez mais utilizada na área da saúde. Existe um rico debate a respeito de métodos e medidas apropriadas para mensurar e analisar padrões, mas de modo geral, entre as dimensões da acessibilidade aos serviços de saúde [@penchansky1981concept], a acessibilidade e a disponibilidade podem ser interpretadas como as que têm natureza espacial. A articulação destas dimensões é o que se chama "acessibilidade espacial" e que vem sendo utilizado nos estudos em saúde com abordagem espacial.
+
+A disponibilidade diz respeito à capacidade de oferta e atendimento dos sistemas e envolve uma relação entre oferta e demanda. A acessibilidade compreende as facilidades e impedâncias de mobilidade para acessar equipamentos de saúde e se refere ao custo, usualmente medido em distância ou tempo, para chegar de uma determinada origem a um determinado destino no espaço geográfico.
+
+Principalmente em contextos urbanos e com alta densidade populacional, onde podem existir múltiplos postos de atendimento e micro-regiões com maiores e menores níveis de demanda aos serviços, pode ocorrer sobreposição na oferta de equipamentos e profissionais. Deste modo a distribuição espacial da capacidade de atendimento pode produzir distorções e desigualdades na acessibilidade à saúde. Assim, é preciso observar estas duas dimensões de forma articulada [@guagliardo2004spatial]. 
+
+A análise espacial da acessibilidade à saúde articula no território dimensões de disponibilidade e de acessibilidade, retratando um determinado acoplamento entre a infraestrutura de oferta dos sistemas de saúde e a população.
+
+Quando investigou a acessibilidade espacial à atenção primária à saúde nos EUA, @guagliardo2004spatial observou que tratava-se de uma paisagem pouco explorada no campo da acessibilidade á saúde. As lacunas de metodologia e conhecimento que o autor identificou eram mais fortes em relação às zonas urbanas, onde em sua opinião não apenas vive a maior parte da população demandante por serviços, como a falta de estudos mais densos a respeito refletia-se em fragilidade metodológica para abordar o problema em grandes metrópoles.
+
+A atenção básica (ou primária) é considerada um nível estratégico dos sistemas de saúde. Envolve custos baixos de produção e entrega e tem um caráter preventivo que permite trabalhar a saúde na ponta, evitando complicações mais graves e minimizando a demanda por serviços de alta complexidade.
+
+No Brasil, o locus da atenção primária à saúde são as Unidades Básicas de Saúde (UBS), que representam os equipamentos de saúde com maior capilaridade no território e servem como principal porta de entrada no Sistema Único de Saúde (SUS). Para capturar os padrões de acessibilidade espacial á atenção básica no município de São Paulo foram utilizados os indicadores de acessibilidade competitiva (AC) e acessibilidade viável (AV).
 
 ## Acessibilidade competitiva (AC)
 
-O indicador AC é informação do setor censitário baseado na relação espacial entre oportunidades (oferta) e demanda de cada UBS.
+O indicador AC é uma medida de fornecimento-população, que são conhecidas na literatura como medidas de oportunidade competitiva. Sua característica é a incorporação não apenas do número de oportunidades disponíveis em cada localidade, mas da perspectiva de que as oportunidades estão em disputa pelo conjunto de usuários. Assim, a acessibilidade competitivia é uma medida de oportunidade cumulativa associada a cada área de abrangência assim definida: seja $\{ A_1, A_2, \dots, A_n \}$ a partição dos setores censitários que corresponde às áreas de abrangência das $n$ UBS’s do município, ou seja, $\bigcup^{n}_{i=1} A_i$ corresponde ao território do município como um todo e $A_i \bigcap A_j = \varnothing, \forall_i \ne j$. Para uma determinada área de abrangência $A_i$, definimos $O_i$ o número de oportunidades encontradas na UBS $i$, e $D_i$ a demanda por atendimento na unidade de saúde $i$.
+
+A medida de Acessibilidade Competitiva $AC_i$ para cada 1000 habitantes para a área $A_i$ fica definida por:
+
+$$
+AC_i = \frac{D_i}{O_i} \times 1000
+$$
+
+A demanda é simplesmente a população vivendo nos setores censitários que compõe a área de abrangência e o número de oportunidades é a soma de todos os enfermeiros e médicos da cada UBS. Assim, o indicador AC é informação do setor censitário baseado na relação espacial entre oportunidades (oferta) e demanda de cada UBS.
+
+O cálculo da acessibilidade competiviva pode ser feito facilmente com a função `asha_ac`.
 
 ```{r}
-od <- asha_ac(od, pessoas_setor, cnes)
+od <- asha_ac(od, pessoas_sp, cnes, modelo, 1000)
 glimpse(od)
+```
+
+A função `asha_ac` inclui duas variáveis no dataset, uma com a demanda de cada área de UBS e outra com o indicador de acessibilidade competitiva. Abaixo visualizamos a distribuição das variáveis de disponibilidade.
+
+```{r, fig.width=7, fig.height=6, warning = FALSE, message = FALSE}
+vars <- c("oportunidades", "demanda", "ac")
+plots <- lapply(vars, function(i) asha_hist(od, i, fill = "modelo"))
+do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
 ```
 
 ## Acessibilidade viável (AV)
 
-Que pode ser facilmente criado com a função `asha_av`. Ao indicar o data frame, a coluna de id da área de saúde (zonas de destino) e a variável com o número de habitantes dos setores censitários (zonas de origem), a função adicionará 3 colunas, com os minutos, um variável binária indicando se o setor está no raio de acessibilidade viável ou não e outra que indica a proporção da população no raio de acesso viável em cada UBS.
+O Ministério da Saúde do Brasil prioriza o acesso à pé em centros urbanos com alta densidade populacional. De tal maneira definimos 15 minutos como o tempo máximo de caminhada que determina o raio de acessibilidade viável (AV).
+
+Utilizamos o raio AV como parâmetro para calcular a proporção da população em condições adequadas de acessibilidade, que pode ser facilmente criado com a função `asha_av`. Ao indicar o data frame, a coluna de id da área de saúde (zonas de destino) e a variável com o número de habitantes dos setores censitários (zonas de origem), a função adicionará 3 colunas, com os minutos, um variável binária indicando se o setor está no raio de acessibilidade viável ou não e outra que indica a proporção da população no raio de acesso viável em cada UBS.
 
 ```{r}
-od <- asha_av(od, cnes, tempo, pessoas_setor)
+od <- asha_av(od, cnes, tempo, pessoas_sp)
 glimpse(od)
 ```
 
 ## Mesclar variáveis OD em setores_sp
 
-```{r}
-vigente <-
-  od %>%
-  filter(modelo == "vigente") %>%
-  select(-pessoas_setor, -dens_demografica, -modelo, -total_enf, -total_med) %>%
-  rename(cnes_vig = cnes,
-         o_vig = oportunidades, d_vig = demanda,
-         ac_vig = ac, minutos_vig = minutos,
-         av_vig = av, av_prop_vig = av_prop,
-         distancias_vig = distancias, tempo_vig = tempo)
+Para concluir a estruturação dos dados incluímos as variáveis geradas no dataset `od` de origem-destino em formato *tidy* na malha de setores censitários. Isto nos permitirá plotar os dados no mapa e analisar os padrões espaciais dos indicadores.
 
-proximidade <-
-  od %>%
-  filter(modelo == "proximidade") %>%
-  select(-pessoas_setor, -dens_demografica, -modelo) %>%
-  rename(cnes_prox = cnes,
-     o_prox = oportunidades, d_prox = demanda,
-     ac_prox = ac, minutos_prox = minutos,
-     av_prox = av, av_prop_prox = av_prop,
-     distancias_prox = distancias, tempo_prox = tempo)
-
-
-setores_sp <-
-  setores_sp %>%
-  merge(vigente, by = "cd_geocodi", all.x = TRUE) %>%
-  merge(proximidade, by = "cd_geocodi", all.x = TRUE)
-```
-
-# Visualização dos dados
-
-## Variáveis numéricas
-
-Para análises exploratórias, as funções de visualização podem facilitar a tarefa.
-
-Com a função `asha_hist` podemos visualizar a distribuição dos indicadores relacionados à disponibilidade de profissinais por UBS.
-
-Podemos analisar facilmente uma única variável:
-
-```{r}
-asha_hist(setores_sp, "d_prox")
-```
-
-Ou podemos plotar várias variáveis de uma só vez guardando os plots com `lapply()`.
-
-```{r, fig.width=3, fig.height=2}
-vars <- c("o_vig", "o_prox", "d_vig", "d_prox")
-lapply(vars, function(i) asha_hist(setores_sp, i))
-```
-
-Se quisermos também podemos organizar facilmente os gráficos em um grid utilizando o `gridExtra::grid.arrange()`.
-
-```{r, fig.width=7, fig.height=6, warning = FALSE, message = FALSE}
-plots <- lapply(vars, function(i) asha_hist(setores_sp, i))
-do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
-```
-
-Ainda, é possível estabelecer o parâmetro `fill` e plotar a distribuição para os níveis de uma variável categórica. Por exemplo, acima plotamos as variáveis o, d e minutos para os dois modelos, especificando cada variável em `setores_sp`. O objeto `od` estoca estas mesmas informações, em formato tidy, e portanto o gráfico pode ser feito também assim.
-
-```{r, fig.width=7, fig.height=3, warning = FALSE, message = FALSE}
-vars <- c("oportunidades", "demanda")
-plots <- lapply(vars, function(i) asha_hist(od, i, fill = "modelo"))
-do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
-```
-
-## Variáveis categóricas
+Antes, porém, já criamos algumas variáveis categóricas derivadas dos indicadores.
 
 ```{r}
 od <-
@@ -473,111 +605,132 @@ od <-
          av_prop_decimais = cut(av_prop,
                                 breaks = c(0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1),
                                 labels = c("Até 10%", "10-20%", "20-30%", "30-40%", "40-50%",
-                                           "50-60%", "60-70%", "70-80%", "80-90%", "90-100")))
+                                           "50-60%", "60-70%", "70-80%", "80-90%", "90-100"))) %>%
+  group_by(modelo) %>%
+  mutate(ac_classes = recode(ntile(ac, 5),
+                             "1" = "Q1", "2" = "Q2",
+                             "3" = "Q3", "4" = "Q4",
+                             "5" = "Q5")) %>%
+  ungroup()
+
+vigente <-
+  od %>%
+  filter(modelo == "vigente") %>%
+  select(-pessoas_sp, -dens_demografica, -modelo, -total_enf, -total_med) %>%
+  rename(cnes_vig = cnes,
+         o_vig = oportunidades, d_vig = demanda,
+         ac_vig = ac, minutos_vig = minutos,
+         av_vig = av, av_prop_vig = av_prop,
+         distancias_vig = distancias, tempo_vig = tempo,
+         ac_c_vig = ac_classes, av_prop_decimais_vig = av_prop_decimais,
+         minutos_classes_vig = minutos_classes)
+
+proximidade <-
+  od %>%
+  filter(modelo == "proximidade") %>%
+  select(-pessoas_sp, -dens_demografica, -modelo) %>%
+  rename(cnes_prox = cnes,
+         o_prox = oportunidades, d_prox = demanda,
+         ac_prox = ac, minutos_prox = minutos,
+         av_prox = av, av_prop_prox = av_prop,
+         distancias_prox = distancias, tempo_prox = tempo,
+         ac_c_prox = ac_classes, av_prop_decimais_prox = av_prop_decimais,
+         minutos_classes_prox = minutos_classes)
+
+setores_sp <-
+  setores_sp %>%
+  merge(vigente, by = "cd_geocodi", all.x = TRUE) %>%
+  merge(proximidade, by = "cd_geocodi", all.x = TRUE)
 ```
 
-Da mesma forma, podemos plotar uma variável.
+# Analisar indicadores
 
-```{r}
-asha_bar(od, "minutos_classes")
-```
-
-Ou mais de uma variável.
-
-```{r, fig.width=6, fig.height=6}
-vars <- c("minutos_classes", "av_prop_decimais")
-plots <- lapply(vars, function(i) asha_bar(od, i))
-do.call(gridExtra::grid.arrange, c(plots, ncol = 1))
-```
-
-Ou ainda incluir uma terceira dimensão dimensão.
-
-```{r, fig.width=6, fig.height=8}
-vars <- c("minutos_classes", "av_prop_decimais")
-plots <- lapply(vars, function(i) asha_bar(od, i, "modelo"))
-do.call(gridExtra::grid.arrange, c(plots, ncol = 1))
-```
-
-```{r}
-glimpse(od)
-```
+Com os indicadores criados podemos analisar, por exemplo, a distribuicao espacial das areas dentro do raio de acessibilidade viavel e identificar quais sao as areas prioritarias para a realizacao de medidas visando melhorar a acessibilidade aos serviços de atenção básica. Como temos os dados para dois modelos territoriais diferentes, é possível comparar o desempenho de cada modelo em termos de garantia de acessibilidade viável na cidade.
 
 
-```{r, fig.width=6, fig.height=14}
-vars <- od %>% select_if(is.numeric) %>% names()
-plots <- lapply(vars, function(i) asha_hist(od, i, "modelo"))
-do.call(gridExtra::grid.arrange, c(plots, ncol = 2))
-```
-
-## Visualização espacial
-
-Os mapas podemos plotar diretamente com a função `geom_sf`, ainda disponível apenas na versão de desenvolvimento do `ggplot2`.
-
-```{r, fig.width = 5, fig.height = 6}
-# mapa AV para cada modelo
+```{r, fig.width=7, fig.height=4, eval = FALSE}
 p1 <-
   setores_sp %>%
   group_by(av_vig) %>%
-  summarise(sum(pessoas_setor)) %>%
+  summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
   ggplot() +
-  geom_sf(aes(fill = av_vig), lwd = 0) +
-  scale_fill_grey(na.value="#f1f1f1", start=.7, end=.4) +
-  theme_light()
+  geom_sf(aes(fill = av_vig), lwd = .2) +
+  labs(caption = "Modelo vigente")
 
 p2 <-
   setores_sp %>%
   group_by(av_prox) %>%
-  summarise(sum(pessoas_setor)) %>%
+  summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
   ggplot() +
-  geom_sf(aes(fill = av_prox), lwd = 0) +
-  scale_fill_grey(na.value="#f1f1f1", start=.7, end=.4) +
-  theme_light()
-```
+  geom_sf(aes(fill = av_prox), lwd = .2) +
+  labs(caption = "Modelo de proximidade")
 
-```{r, fig.width = 8, fig.height = 5}
 do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol = 2))
 ```
 
-Ou se quisermos uma camada base do território, podemos usar o `ggmap` com o sistema `plot_sf`.
+<center>
+![](/home/brunopinheiro/R/pacotes/asha/vignettes/mapa_av_vig.png)
+![](/home/brunopinheiro/R/pacotes/asha/vignettes/mapa_av_prox.png)
+</center>
 
-```{r}
-# Obter mapa de São Paulo no Google Maps
-library(ggmap)
-sampa <- get_map("São Paulo, SP, Brazil", zoom = 9, maptype = "hybrid", source = "google")
+Podemos ver acima que no modelo de proximidade a área total coberta por condições adequadas de acessibiliade às UBS é mais densa do que no modelo territorial vigente. Mas o que isto significa em termos populacionais? Isto é, qual o percentual de população incluída no raio de AV à atenção básica caso o modelo de proximidade fosse implementado?
 
-# mapa AV para cada modelo
-p1 <-
-  setores_sp %>%
-  group_by(av_vig) %>%
-  summarise(sum(pessoas_setor))
-
-p2 <-
-  setores_sp %>%
-  group_by(av_prox) %>%
-  summarise(sum(pessoas_setor))
-
-# plotar
-plot(st_transform(p1[1], 3857), bgMap = sampa, lwd = .1)
-plot(st_transform(p2[1], 3857), bgMap = sampa, lwd = .1)
-```
-
-E para plots que demandam cálculos prévios, podemos utilizar normalmente o `dplyr` junto do `ggplot2`.
-
-```{r, fig.width=6, fig.height=2}
+```{r, fig.height=2, fig.width=7}
 od %>%
-  filter(!is.na(av), !is.na(pessoas_setor)) %>%
   group_by(modelo, av) %>%
-  summarise(prop = sum(pessoas_setor)) %>%
-  mutate(prop = prop.table(prop)) %>%
-  ggplot(aes(x = av, y = prop, fill = modelo)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  geom_text(aes(label = scales::percent(round(prop, 3))),
-            position = position_dodge(width = 1), vjust = .5, hjust = -.1) +
-  ggtitle("% de população em raio de AV") +
-  ylim(0, .8) + coord_flip() + theme_light()
+  filter(!is.na(av_prop), !is.na(av)) %>%
+  summarise(pop = sum(pessoas_sp, na.rm = T)) %>%
+  mutate(av_prop = prop.table(pop)) %>%  ggplot(aes(y = av_prop, x = modelo)) +
+  geom_bar(aes(fill = av), stat = "identity") +
+  geom_text(aes(label = scales::percent(round(av_prop, 3)), group = av),
+            position = position_stack(vjust=.5),
+            size = 3, color = "white", fontface = "bold") +
+  xlab(NULL) + ylab("% AV") +
+  theme(legend.position = "top") +
+  coord_flip()
 ```
+
+Teríamos um ganho proporcional de 9%, conforme o gráfico acima. Isto equivaleria ao poder público beneficiar um total estimado de 1.012.815 pessoas com a melhoria da acessibilidade aos postos de atendimento que ofertam serviços de atenção básica de saúde.
+
+O segundo indicador podemos analisar em uma tabela:
 
 ```{r}
-rm(list=ls())
+library(kableExtra)
+
+od$modelo <- factor(od$modelo, levels=rev(levels(factor(od$modelo))))
+
+df <-
+  od %>%
+  filter(!is.na(ac_classes)) %>%
+  group_by(modelo, ac_classes) %>%
+  summarise(AV = median(av_prop, na.rm = TRUE),
+            AC = round(median(ac, na.rm = TRUE), 2)) %>%
+  rename(Intervalos = ac_classes)
+
+df_tab <-
+  df[1:5, 2:4] %>%
+  bind_cols(df[6:10, 3:4])
+
+df_tab <- df_tab %>%
+  mutate(AV_d = scales::percent(AV1 - AV),
+         AV_d = cell_spec(AV_d, color = ifelse(AV_d < 0, "red", "")),
+         AC_d = scales::percent((AC1 / AC) - 1),
+         AC_d = cell_spec(AC_d, color = ifelse(AC_d < 0, "red", "")),
+         AV = scales::percent(AV),
+         AV1 = scales::percent(AV1)) %>%
+  rename(AC = AC1,
+         AV = AV1,
+         AC = AC_d,
+         AV = AV_d)
+
+knitr::kable(df_tab, escape = F, format = "html", booktabs = T,
+      caption = "Medianas dos indicadores: comparação por modelo e quintil de AC",
+      format.args = list(decimal.mark = ',', big.mark = ".")) %>%
+  kable_styling(font_size = 12) %>%
+  add_header_above(c("",
+                   "Modelo Vigente" = 2,
+                   "Modelo Proximidade" = 2,
+                   "Diferenças (Proximidade - Vigente)" = 2))
 ```
 
+# Referências

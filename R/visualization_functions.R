@@ -27,7 +27,7 @@
 #' asha_bar(as.data.frame(setores_sp), "tipo")
 #' # Com mais de uma variavel
 #' library(dplyr)
-#' setores_sp$pm <- as.factor(setores_sp$pessoas_setor > mean(setores_sp$pessoas_setor, na.rm = TRUE))
+#' setores_sp$pm <- as.factor(setores_sp$pessoas_sp > mean(setores_sp$pessoas_sp, na.rm = TRUE))
 #' vars <- c("tipo", "pm")
 #' plots <- lapply(vars, function(i) asha_bar(as.data.frame(setores_sp), i))
 #'
@@ -119,7 +119,7 @@ asha_bar <- function(df, x, fill = NULL) {
 #'
 #' @examples
 #' data("setores_sp")
-#' asha_hist(as.data.frame(setores_sp), "pessoas_setor")
+#' asha_hist(as.data.frame(setores_sp), "pessoas_sp")
 #'
 #' @import ggplot2
 #'

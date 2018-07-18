@@ -4,6 +4,8 @@
 #' pelo IBGE (malha de setores censitarios do estado de Sao Paulo) e resultados
 #' agregados por setor censitario para a cidade de Sao Paulo. Alem disso inclui
 #' variaveis calcularas: o numero de habitantes, a area e densidade demografica.
+#' As variaveis com sufixo _vig e _prox referem-se aos modelos vigente e de
+#' proximidade, respectivamente.
 #'
 #' @format Um dataset classe sf com os poligonos dos setores censitarios,
 #'     contendo 18953 linhas e 6 variaveis:
@@ -12,12 +14,45 @@
 #'   \item{cd_geocodd}{Codigo de identificacao do distrito}
 #'   \item{nm_distrit}{Nome do distrito}
 #'   \item{tipo}{Indica se o setor e urbano ou rural}
-#'   \item{pessoas_setor}{Numero de pessoas residentes nos setores censitarios}
+#'   \item{pessoas_sp}{Numero de pessoas residentes nos setores censitarios}
 #'   \item{area}{Area do setor censitario em km^2^}
 #'   \item{dens_demografica}{Densidade demografica do setor censitario}
+#'   \item{cnes_}{Codigo CNES da UBS}
+#'   \item{distancias_}{Distancia em metros do percurso a pe entre o setor
+#'   censitario e a UBS}
+#'   \item{tempo_}{Tempo de viagem do percurso a pe entre o setor censitario
+#'   e a UBS em segundos}
+#'   \item{o_}{Indicador de Oportunidades (numero de medicos e enfermeiros
+#'   nas UBS)}
+#'   \item{d_}{Indicador de Demanda das UBS}
+#'   \item{ac_}{Indicador de Acessibilidade Competitiva (AC)}
+#'   \item{minutos}{Tempo de viagem do percurso a pe entre o setor censitario
+#'   e a UBS em minutos}
+#'   \item{av_}{Variavel binaria indicando se o setor esta ou nao no raio de
+#'   acessibilidade viavel por UBS}
+#'   \item{av_prop_}{Proporcao de habitantes residentes no raio de
+#'   acessibilidade viavel por UBS}
+#'   \item{minutos_classe_}{Tempo de viagem do percurso a pe dividido em seis
+#'   categorias}
+#'   \item{av_prop_decimais_vig}{Decimos de proporcao de habitantes residentes
+#'   no raio de acessibilidade viavel por UBS}
+#'   \item{ac_c_}{Quintis de acessibilidade competitiva}
 #'   \item{geometry}{Geometria dos polígonos}
 #' }
 "setores_sp"
+
+#' Total de moradores nos setores censitários de São Paulo (SP)
+#'
+#' O dataset inclui uma variavel demografica extraida dos resultados do censo
+#' 2010 agregados por setor censitario contendo o numero de moradores em
+#' domicilios particulares e coletivos.
+#'
+#' @format Um dataframe com 18363 linhas e 2 variaveis:
+#' \describe{
+#'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
+#'   \item{pessoas_setor}{Numero de pessoas residentes nos setores censitarios}
+#' }
+"pessoas_sp"
 
 #' Centroides dos setores censitarios da cidade de Sao Paulo
 #'
@@ -160,3 +195,46 @@
 #'   \item{id}{Codigo de identificacao das origens e destinos}
 #' }
 "rotas_faltas"
+
+#' Setores censitarios da cidade de Sao Paulo
+#'
+#' O dataset foi estruturado a partir de dados do Censo 2010 disponibilidos
+#' pelo IBGE (malha de setores censitarios do estado de Sao Paulo) e resultados
+#' agregados por setor censitario para a cidade de Sao Paulo. Alem disso inclui
+#' variaveis calcularas: o numero de habitantes, a area e densidade demografica.
+#' As variaveis com sufixo _vig e _prox referem-se aos modelos vigente e de
+#' proximidade, respectivamente.
+#'
+#' @format Um dataset classe sf com os poligonos dos setores censitarios,
+#'     contendo 18953 linhas e 6 variaveis:
+#' \describe{
+#'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
+#'   \item{cnes}{Codigo CNES da UBS}
+#'   \item{dens_demografica}{Densidade demografica do setor censitario}
+#'   \item{pessoas_sp}{Numero de pessoas residentes nos setores censitarios}
+#'   \item{distancias}{Distancia em metros do percurso a pe entre o setor
+#'   censitario e a UBS}
+#'   \item{tempo}{Tempo de viagem do percurso a pe entre o setor censitario
+#'   e a UBS em segundos}
+#'   \item{total_enf}{Numero de enfermeiros nas UBS}
+#'   \item{total_med}{Numero de medicos nas UBS}
+#'   \item{oportunidades}{Indicador de Oportunidades (numero de medicos e enfermeiros
+#'   nas UBS)}
+#'   \item{modelo}{Variavel binaria indicando se a observacao se refere ao modelo
+#'   vigente ou de proximidade}
+#'   \item{demanda}{Indicador de Demanda das UBS}
+#'   \item{ac}{Indicador de Acessibilidade Competitiva (AC)}
+#'   \item{minutos}{Tempo de viagem do percurso a pe entre o setor censitario
+#'   e a UBS em minutos}
+#'   \item{av}{Variavel binaria indicando se o setor esta ou nao no raio de
+#'   acessibilidade viavel por UBS}
+#'   \item{av_prop_}{Proporcao de habitantes residentes no raio de
+#'   acessibilidade viavel por UBS}
+#'   \item{minutos_classe_}{Tempo de viagem do percurso a pe dividido em seis
+#'   categorias}
+#'   \item{av_prop_decimais_vig}{Decimos de proporcao de habitantes residentes
+#'   no raio de acessibilidade viavel por UBS}
+#'   \item{ac_classes}{Quintis de acessibilidade competitiva}
+#'   \item{geometry}{Geometria dos polígonos}
+#' }
+"od"

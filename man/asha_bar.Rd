@@ -30,7 +30,7 @@ data("setores_sp")
 asha_bar(as.data.frame(setores_sp), "tipo")
 # Com mais de uma variavel
 library(dplyr)
-setores_sp$pm <- as.factor(setores_sp$pessoas_setor > mean(setores_sp$pessoas_setor, na.rm = TRUE))
+setores_sp$pm <- as.factor(setores_sp$pessoas_sp > mean(setores_sp$pessoas_sp, na.rm = TRUE))
 vars <- c("tipo", "pm")
 plots <- lapply(vars, function(i) asha_bar(as.data.frame(setores_sp), i))
 

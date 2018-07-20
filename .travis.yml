@@ -1,9 +1,7 @@
 language: r
 
-# r:
-#   - release
-#   - devel
-#   - oldrel
+r:
+  - release
 
 sudo: required
 dist: trusty
@@ -11,9 +9,9 @@ cache:
   - packages
   - ccache
 
-# r_github_packages:
-#   - r-dbi/DBI
-#   - r-dbi/RPostgres
+r_github_packages:
+  - r-dbi/DBI
+  - r-dbi/RPostgres
 
 addons:
   postgresql: "9.6"

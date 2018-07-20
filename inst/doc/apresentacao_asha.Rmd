@@ -258,9 +258,6 @@ od <- asha_av(od, cnes, tempo, pessoas_sp)
 glimpse(od)
 ```
 
-## Visualizar variáveis de acessibilidade
-
-
 ## Computar novas variáveis
 
 ```{r}

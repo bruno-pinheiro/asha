@@ -351,9 +351,9 @@ df_tab <-
 
 df_tab <- df_tab %>%
   mutate(AV_d = scales::percent(AV1 - AV),
-         AV_d = cell_spec(AV_d, color = ifelse(AV_d < 0, "red", "")),
+         AV_d = kableExtra::cell_spec(AV_d, color = ifelse(AV_d < 0, "red", "")),
          AC_d = scales::percent((AC1 / AC) - 1),
-         AC_d = cell_spec(AC_d, color = ifelse(AC_d < 0, "red", "")),
+         AC_d = kableExtra::cell_spec(AC_d, color = ifelse(AC_d < 0, "red", "")),
          AV = scales::percent(AV),
          AV1 = scales::percent(AV1)) %>%
   rename(AC = AC1,

@@ -411,8 +411,7 @@ asha_av <- function(df, id, segundos, pop, raio) {
 
   if(nrow(av_x) < nrow(df %>% dplyr::distinct(!! id))) {
     av_x <- av_x %>%
-      rbind(
-        data.frame(cnes = df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>%
+      rbind(data.frame(cnes = df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>%
                      dplyr::pull(!! id) %>% unique(),
                    av_prop = 0))
     df <- df %>% dplyr::left_join(av_x, by = quo_name(id))

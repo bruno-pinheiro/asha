@@ -372,9 +372,10 @@ asha_ac <- function(df1, pop, area, model, n) {
 #'
 #' @param df Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.
 #' @param id Variavel com o id das areas de saúde
-#' @param tempo Variavel com o tempo de deslocamento em segundos
+#' @param segundos Variavel com o tempo de deslocamento em segundos
 #' @param pop Variavel com o total de habitantes da
 #'            menor unidade territorial
+#' @param raio Variavel numerica indicando o tamanho do raio (em minutos)
 #'
 #' @details Utiliza as variaveis passadas na funcao para calcular o indicador de acessibilidade
 #'          viavel, incluindo a criacao das variaveis de acessibilidade.
@@ -386,47 +387,38 @@ asha_ac <- function(df1, pop, area, model, n) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # asha_av(df, id, tempo, pop)
+#' # asha_av(df, id, tempo, pop, raio)
 #'
 #' @export
-asha_av <- function(df, id, tempo, pop) {
-  av_prop = NULL
-  minutos = NULL
-  av = NULL
+asha_av <- function(df, id, segundos, pop, raio) {
+  av = NULL; av_prop = NULL; minutos = NULL
   id <- dplyr::enquo(id)
   pop <- dplyr::enquo(pop)
-  tempo <- dplyr::enquo(tempo)
+  segundos <- dplyr::enquo(segundos)
 
-  av_x <-
-    df %>%
-    dplyr::mutate(minutos = !! tempo / 60,
-                  av = minutos <= 15) %>%
+  df <- df %>%
+    dplyr::mutate(minutos = !! segundos / 60, av = as.character(minutos <= raio),
+                  av = dplyr::recode(av, "TRUE" = "Sim", "FALSE" = "Nao"))
+
+  av_x <- df %>%
     dplyr::filter(!is.na(av)) %>%
     dplyr::group_by(!! id, av) %>%
     dplyr::summarise(av_prop = sum(!! pop, na.rm = TRUE)) %>%
     dplyr::mutate(av_prop = prop.table(av_prop)) %>%
     dplyr::ungroup() %>%
-    dplyr::filter(av == TRUE) %>%
+    dplyr::filter(av == "Sim") %>%
     dplyr::select(-av)
 
   if(nrow(av_x) < nrow(df %>% dplyr::distinct(!! id))) {
-    av_x <-
-      av_x %>%
+    av_x <- av_x %>%
       rbind(
-        list(df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>% dplyr::pull(!! id) %>% unique(), 0)
-        )
-    df <-
-      df %>%
-      dplyr::mutate(minutos = !! tempo / 60,
-             av = dplyr::recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
-      dplyr::left_join(av_x, by = quo_name(id))
+        data.frame(cnes = df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>%
+                     dplyr::pull(!! id) %>% unique(),
+                   av_prop = 0))
+    df <- df %>% dplyr::left_join(av_x, by = quo_name(id))
     return(df)
   } else {
-    df <-
-      df %>%
-      dplyr::mutate(minutos = !! tempo / 60,
-                    av = dplyr::recode(as.character(minutos <= 15), "TRUE" = "Sim", "FALSE" = "Nao")) %>%
-      dplyr::left_join(av_x, by = quo_name(id))
+    df <- df %>% dplyr::left_join(av_x, by = quo_name(id))
     return(df)
   }
 }

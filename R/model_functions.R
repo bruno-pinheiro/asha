@@ -1,5 +1,3 @@
-# Funcao asha_intersect ###########################
-
 #' @title Interseccao de pontos de origem em areas de saude
 #' @name asha_intersect
 #'
@@ -37,8 +35,6 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
     as.data.frame() %>%
     select(id2, id1)
 }
-
-# Funcao asha_nn ###########################
 
 #' @title Encontrar os n pontos mais proximos
 #' @name asha_nn
@@ -90,8 +86,6 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
     select(!!id2, !!id1, proximidade, distancia)
   return(df)
 }
-
-# Funcao asha_dists ###########################
 
 #' @title Obter informacões de distancia e tempo de viagem por modal
 #' @name asha_dists
@@ -244,8 +238,6 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
 }
 
 
-# Funcao asha_zones ###########################
-
 #' @title Estrutura a base de zonas necessaria para usar \code{asha_dists}
 #' @name asha_zones
 #'
@@ -350,10 +342,6 @@ asha_ac <- function(df1, pop, area, model, n) {
     return(df1)
   }
 }
-
-
-
-# Funcao asha_av ###########################
 
 #' @title Indicador AV
 #' @name asha_av

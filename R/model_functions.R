@@ -74,28 +74,19 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
-  id1 <- rlang::sym(id1)
-  id2 <- rlang::sym(id2)
-  nn.dists.Var1 <- NULL
-  nn.dists.Var2 <- NULL
-  nn.idx.value <- NULL
-  nn.dists.value <- NULL
-  de <- NULL
-  para <- NULL
-  proximidade <- NULL
-  distancia <- NULL
+  id1 <- rlang::sym(id1); id2 <- rlang::sym(id2)
+  nn.dists.Var1 = NULL; nn.dists.Var2 = NULL
+  nn.idx.value = NULL; nn.dists.value = NULL
+  de = NULL; para = NULL; proximidade = NULL; distancia = NULL
 
   df <- list(coords1 = st_coordinates(sf1), coords2 = st_coordinates(sf2))
-  df <- nabor::knn(data = df[[1]], query = df[[2]], k = n)
-  df <- reshape2::melt(df)
-  df <-
-    as.data.frame(split(df, df$L1)) %>%
-    rename(!!id2 := nn.dists.Var1,
-           !!id1 := nn.idx.value,
-           proximidade = nn.dists.Var2,
+  df <- nabor::knn(data = df[[1]], query = df[[2]], k = n) %>%
+    reshape2::melt()
+  df <- as.data.frame(split(df, df$L1)) %>%
+    mutate(!!id2 := pull(as.data.frame(sf2), !!id2)[nn.dists.Var1],
+           !!id1 := pull(as.data.frame(sf1), !!id1)[nn.idx.value]) %>%
+    rename(proximidade = nn.dists.Var2,
            distancia = nn.dists.value) %>%
-    mutate(!!id2 := pull(as.data.frame(sf2), !!id2)[!!id2],
-           !!id1 := pull(as.data.frame(sf1), !!id1)[!!id1]) %>%
     select(!!id2, !!id1, proximidade, distancia)
   return(df)
 }

@@ -33,7 +33,6 @@
 #' @export
 asha_intersect <- function(sf1, sf2, id1, id2) {
   sf1 %>%
-    select(id1) %>%
     st_join(select(sf2, id2), join = st_intersects) %>%
     as.data.frame() %>%
     select(id2, id1)

@@ -265,8 +265,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
 #'
 #' @export
 asha_zones <- function(sf1, sf2, id1, id2) {
-  id = NULL
-  tipo = NULL
+  id = NULL; tipo = NULL
   rbind(
     sf1 %>%
       dplyr::select(!!id1) %>%
@@ -278,7 +277,6 @@ asha_zones <- function(sf1, sf2, id1, id2) {
       dplyr::mutate(tipo = !!id2)
   )
 }
-
 
 # Funcao asha_ac ###########################
 
@@ -310,36 +308,29 @@ asha_zones <- function(sf1, sf2, id1, id2) {
 #'
 #' @export
 asha_ac <- function(df1, pop, area, model, n) {
-  oportunidades <- NULL
-  demanda <- NULL
+  oportunidades = NULL; demanda = NULL
   pop <- dplyr::enquo(pop)
   area <- dplyr::enquo(area)
   if(missing(model)) {
-    df1 <-
-      df1 %>%
+    df1 %>%
       dplyr::group_by(!! area) %>%
       dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(ac = (oportunidades / demanda) * n)
-    return(df1)
   } else if(missing(n)) {
     model <- dplyr::enquo(model)
-    df1 <-
-      df1 %>%
+    df1 %>%
       dplyr::group_by(!! model, !! area) %>%
       dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(ac = (oportunidades / demanda))
-    return(df1)
   } else {
     model <- dplyr::enquo(model)
-    df1 <-
-      df1 %>%
+    df1 %>%
       dplyr::group_by(!! model, !! area) %>%
       dplyr::mutate(demanda = sum(!! pop, na.rm = TRUE)) %>%
       dplyr::ungroup() %>%
       dplyr::mutate(ac = (oportunidades / demanda) * n)
-    return(df1)
   }
 }
 

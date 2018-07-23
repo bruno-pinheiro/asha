@@ -4,17 +4,19 @@
 \alias{asha_av}
 \title{Indicador AV}
 \usage{
-asha_av(df, id, tempo, pop)
+asha_av(df, id, segundos, pop, raio)
 }
 \arguments{
 \item{df}{Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.}
 
 \item{id}{Variavel com o id das areas de saúde}
 
-\item{tempo}{Variavel com o tempo de deslocamento em segundos}
+\item{segundos}{Variavel com o tempo de deslocamento em segundos}
 
 \item{pop}{Variavel com o total de habitantes da
 menor unidade territorial}
+
+\item{raio}{Variavel numerica indicando o tamanho do raio (em minutos)}
 }
 \value{
 A funcao adiciona 3 colunas: \code{minutos} (com os minutos de deslocamento),
@@ -30,7 +32,7 @@ Utiliza as variaveis passadas na funcao para calcular o indicador de acessibilid
          viavel, incluindo a criacao das variaveis de acessibilidade.
 }
 \examples{
-# asha_av(df, id, tempo, pop)
+# asha_av(df, id, tempo, pop, raio)
 
 }
 \author{

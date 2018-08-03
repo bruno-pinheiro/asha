@@ -14,6 +14,7 @@ output:
   rmarkdown::html_vignette:
     number_sections: yes
     toc: yes
+    fontsize: 16
 subtitle: Exemplo a partir do caso da cidade de São Paulo
 bibliography: referencias.bib
 vignette: |
@@ -289,7 +290,7 @@ glimpse(zonas)
 
 Com o objeto `zonas` será possível calcular as distâncias e tempos de rota. Para ilustrar, podemos visualizar as 5 UBS mais próximas de um setor aleatório.
 
-```{r}              
+```{r, eval = FALSE}
 cd_setor <- "355030871000027"
 cd_ubs <- od_euclidiano %>% filter(cd_geocodi == cd_setor) %>% pull(cnes)
 
@@ -336,7 +337,7 @@ p2 <-
   geom_sf(data = rotas2, col = "blue")
 ```
 
-```{r, fig.width=7, fig.height=4, fig.align='center'}
+```{r, fig.width=7, fig.height=4, fig.align='center', eval = FALSE}
 do.call(gridExtra::grid.arrange, c(list(p1, p2), ncol =2))
 ```
 
@@ -590,7 +591,7 @@ O Ministério da Saúde do Brasil prioriza o acesso à pé em centros urbanos co
 Utilizamos o raio AV como parâmetro para calcular a proporção da população em condições adequadas de acessibilidade, que pode ser facilmente criado com a função `asha_av`. Ao indicar o data frame, a coluna de id da área de saúde (zonas de destino) e a variável com o número de habitantes dos setores censitários (zonas de origem), a função adicionará 3 colunas, com os minutos, um variável binária indicando se o setor está no raio de acessibilidade viável ou não e outra que indica a proporção da população no raio de acesso viável em cada UBS.
 
 ```{r}
-od <- asha_av(od, cnes, tempo, pessoas_sp)
+od <- asha_av(od, cnes, tempo, pessoas_sp, 15)
 glimpse(od)
 ```
 

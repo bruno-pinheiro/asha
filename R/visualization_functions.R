@@ -1,5 +1,3 @@
-# Barplot uma variavel categorica ###########################
-
 #' @title Grafico de barras para uma variavel categorica
 #' @name asha_bar
 #'
@@ -94,8 +92,6 @@ asha_bar <- function(df, x, fill = NULL) {
   }
 }
 
-# Histograma univariado ###########################
-
 #' @title Histograma para uma variavel numerica
 #' @name asha_hist
 #'
@@ -128,20 +124,105 @@ asha_hist <- function(df, x, fill = NULL) {
   x <- rlang::sym(x)
 
   if(is.null(fill)) {
-    ggplot(as.data.frame(df), aes(x=!!x)) +
-      geom_histogram(col="black",fill="lightblue") +
-      labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
-           x = NULL) +
-    theme_bw()
+    ggplot2::ggplot(as.data.frame(df), aes(x = !!x)) +
+      ggplot2::geom_histogram(col = "black",fill = "lightblue") +
+      ggplot2::labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
+                    x = NULL) +
+      ggplot2::theme_bw()
   } else {
     fill = rlang::sym(fill)
-    ggplot(as.data.frame(df), aes(x=!!x)) +
-      geom_histogram(aes(fill = !!fill),
-                     col="black", alpha = .5, lwd = .2,
-                     position = position_identity()) +
-      labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
-           x = NULL) +
-      theme_bw() +
-      theme(legend.position = "top")
+    ggplot2::ggplot(as.data.frame(df), aes(x = !!x)) +
+      ggplot2::geom_histogram(aes(fill = !!fill),
+                              col = "black", alpha = .5, lwd = .2,
+                              position = position_identity()) +
+      ggplot2::labs(title = paste0("Histograma de ", colnames(select(df, !!x))),
+                    x = NULL) +
+      ggplot2::theme_bw() +
+      ggplot2::theme(legend.position = "top")
     }
+}
+
+#' @title Mapa cloropletico
+#' @name asha_map
+#'
+#' @description Um tema simples para plotar mapas.
+#'
+#' @param sf Um objeto espacial de classe \code{sf}
+#' @param x Variavel categorica a ser usada em \code{group_by} e \code{fill}.
+#'          Parametro opcional, por padrao assume NULL.
+#' @param pal Nome de uma paleta Color Brewer. Parametro opcional, por padrao
+#'            assume NULL: se \code{x} e dado, por padrao usa a paleta "Set2" e
+#'            se \code{x} nao e dado, nao usa nenhuma paleta.
+#'
+#' @details O tema cria um template limpo para o mapa, sem texto de eixo
+#'          grid, bordas etc.
+#'
+#' @return Um bonito histograma para a variavel \code{x} da base \code{df}.
+#'
+#' @author Bruno Pinheiro
+#'
+#' @seealso \code{\link[ggplot2]{theme}}
+#'
+#' @examples
+#' data("ubs_sp")
+#' asha_map(ubs_sp)
+#'
+#' @export
+asha_map <- function(sf, x = NULL, pal = NULL) {
+  if(is.null(x)) {
+    sf %>%
+      ggplot2::ggplot() +
+      ggplot2::geom_sf() +
+      theme_map()
+  } else if(is.null(pal)) {
+  x <- rlang::sym(x)
+  sf %>%
+    dplyr::group_by(!!x) %>%
+    ggplot2::ggplot() +
+    ggplot2::geom_sf(aes(fill = !!x), lwd = 0, col = NA) +
+    ggplot2::scale_fill_brewer(palette = "Set2") +
+    ggplot2::ggtitle(paste("Distribuicao de", colnames(select(sf, !!x)))) +
+    theme_map()
+  } else {
+    x <- rlang::sym(x)
+    sf %>%
+      dplyr::group_by(!!x) %>%
+      ggplot2::ggplot() +
+      ggplot2::geom_sf(aes(fill = !!x), lwd = 0, col = NA) +
+      ggplot2::scale_fill_brewer(palette = pal) +
+      ggplot2::ggtitle(paste("Distribuicao de", colnames(select(sf, !!x)))) +
+      theme_map()
+  }
+}
+
+#' Tema para mapas
+#' @description Um tema para mapas do ggplot2
+#' @name theme_map
+#'
+#' @examples
+#' library(ggplot2)
+#' data("ubs_sp")
+#'
+#' # Map in geographic coordinates
+#' ggplot(ubs_sp) +
+#'     geom_sf() +
+#'     theme_map()
+#'
+#' @export
+theme_map <- function() {
+  return(
+    theme(panel.grid.major = element_line(colour = 'transparent'),
+          panel.grid.minor = element_line(colour = 'transparent'),
+          panel.background = element_rect(fill = 'transparent', colour = NA),
+          plot.background = element_rect(fill = "transparent", colour = NA),
+          plot.margin = unit(rep(0, 4), "lines"),
+          axis.title = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.ticks.y = element_blank(),
+          strip.text = element_text(size = 8),
+          legend.title = element_text(size = 8),
+          legend.text = element_text(size = 6),
+          legend.margin = margin(t=0,r=0,b=0,l=0, unit="mm"))
+  )
 }

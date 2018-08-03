@@ -6,7 +6,7 @@
 
 if (!file.exists("inst/extdata/sp_resultados_universo")) {
   tmp <- tempfile(fileext = ".zip")
-  download.file("ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_sp_20180416.zip", tmp, quiet = TRUE)
+  download.file("ftp://ftp.ibge.gov.br/Censos/Censo_Demografico_2010/Resultados_do_Universo/Agregados_por_Setores_Censitarios/SP_Capital_20180416.zip", tmp, quiet = TRUE)
   unzip(tmp, exdir = "inst/extdata/sp_resultados_universo")
   unlink(tmp)
 }

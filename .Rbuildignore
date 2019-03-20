@@ -1,5 +1,7 @@
-^.*\.Rproj$
+^inst/docs$
+^inst/extdata$
 ^\.Rproj\.user$
-^data-raw$
 ^\_config\.yml$
 ^\README\.md$
+^data-raw$
+^.*\.Rproj$

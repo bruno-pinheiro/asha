@@ -11,10 +11,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-<meta name="date" content="2018-08-03" />
+<meta name="date" content="2018-11-26" />
 
 <title>Construção de indicadores de acessibilidade espacial à saúde com o pacote asha (versão inicial)</title>
 
+<script src="data:application/x-javascript;base64,JChkb2N1bWVudCkucmVhZHkoZnVuY3Rpb24oKXsKICAgICQoJ1tkYXRhLXRvZ2dsZT0idG9vbHRpcCJdJykudG9vbHRpcCgpOwogICAgJCgnW2RhdGEtdG9nZ2xlPSJwb3BvdmVyIl0nKS5wb3BvdmVyKCk7Cn0pOwo="></script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -77,15 +78,14 @@ Escola de Artes, Ciências e Humanidades da Universidade de São Paulo<br><a cla
 <address class="author_afil">
 Escola de Artes, Ciências e Humanidades da Universidade de São Paulo<br><a class="author_email" href="mailto:#"><a href="mailto:alexandre.leichsenring@usp.br">alexandre.leichsenring@usp.br</a></a>
 </address>
-<h4 class="date"><em>2018-08-03</em></h4>
+<h4 class="date"><em>2018-11-26</em></h4>
 
 
 <div id="TOC">
 <ul>
 <li><a href="#introducao"><span class="toc-section-number">1</span> Introdução</a><ul>
 <li><a href="#o-pacote-asha"><span class="toc-section-number">1.1</span> O pacote <code>asha</code></a></li>
-<li><a href="#funcoes"><span class="toc-section-number">1.2</span> Funções</a></li>
-<li><a href="#classes"><span class="toc-section-number">1.3</span> Classes</a></li>
+<li><a href="#classes"><span class="toc-section-number">1.2</span> Classes</a></li>
 </ul></li>
 <li><a href="#metodologia"><span class="toc-section-number">2</span> Metodologia</a><ul>
 <li><a href="#dados-fundamentais"><span class="toc-section-number">2.1</span> Dados fundamentais</a><ul>
@@ -142,9 +142,7 @@ Escola de Artes, Ciências e Humanidades da Universidade de São Paulo<br><a cla
 <li><p>Visualização dos indicadores</p></li>
 </ol>
 <p>Dada a disponibilidade de um conjunto particular de dados, o objetivo das funções do pacote é viabilizar a realização deste fluxo.</p>
-</div>
-<div id="funcoes" class="section level2">
-<h2><span class="header-section-number">1.2</span> Funções</h2>
+<p>## Funções</p>
 <p>Para construir os indicadores serão utilizadas as seguintes funções do pacote <code>asha</code>:</p>
 <p><strong>Levantamento de dados de mobilidade</strong></p>
 <ul>
@@ -170,7 +168,7 @@ Escola de Artes, Ciências e Humanidades da Universidade de São Paulo<br><a cla
 <p>É possível consultar a documentação de referência de qualquer função entrando com o comando <code>?nome_da_funcao</code> ou <code>help(nome_da_funcao)</code> no console do R. Por exemplo, para visitar as referências da função <code>asha_ac</code> utiliza-se o comando<code>?asha_ac</code>.</p>
 </div>
 <div id="classes" class="section level2">
-<h2><span class="header-section-number">1.3</span> Classes</h2>
+<h2><span class="header-section-number">1.2</span> Classes</h2>
 <p>Basicamente o pacote lida com duas classes de dados: data frames e objetos espaciais do tipo <code>sf</code> (<em>simple features</em>).</p>
 <p>Para representação espacial, o R dispõe de duas linguagens principais. A mais tradicional é derivada do pacote <code>sp</code>. Mais recentemente, porém, o pacote <code>sf</code> surgiu para facilitar a análise espacial integrando este tipo de representação à estrutura de dados do <code>tidyverse</code>, de modo que é possível valer-se das funcionalidades do <code>dplyr</code>, do <code>ggplot2</code> e outros pacotes que integram a linguagem <code>tidy</code> no R.</p>
 <table>
@@ -454,8 +452,8 @@ ubs_sp_mobilidade &lt;-<span class="st"> </span><span class="kw">asha_dists</spa
 <span class="kw">glimpse</span>(od_vigente)
 <span class="co">#&gt; Observations: 18,948</span>
 <span class="co">#&gt; Variables: 2</span>
-<span class="co">#&gt; $ cd_geocodi &lt;chr&gt; &quot;355030883000036&quot;, &quot;355030883000037&quot;, &quot;355030883000...</span>
-<span class="co">#&gt; $ cnes       &lt;chr&gt; &quot;3956954&quot;, &quot;3956954&quot;, &quot;3956954&quot;, &quot;3956954&quot;, &quot;395695...</span></code></pre></div>
+<span class="co">#&gt; $ cd_geocodi &lt;chr&gt; &quot;355030828000139&quot;, &quot;355030828000163&quot;, &quot;355030887000...</span>
+<span class="co">#&gt; $ cnes       &lt;chr&gt; &quot;2819856&quot;, &quot;2819856&quot;, &quot;2819856&quot;, &quot;2819856&quot;, &quot;281985...</span></code></pre></div>
 <p>O resultado tem 18.948 setores, de 18.953. Os cinco nao incluidos não estão dentro de nenhuma área de UBS, por diferenças na geometria das malhas espaciais de setores e de áreas de UBS. Abaixo estão os setores ausentes e as UBS correspondentes (encontradas a partir de análise dos mapas), que são incluídos no dataset.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">od_vigente &lt;-
 <span class="st">  </span>od_vigente <span class="op">%&gt;%</span>

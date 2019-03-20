@@ -4,7 +4,7 @@
 \alias{asha_ac}
 \title{Indicador AC}
 \usage{
-asha_ac(df1, pop, area, model, n)
+asha_ac(df1, pop, area, model, n = 1)
 }
 \arguments{
 \item{df1}{Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.}

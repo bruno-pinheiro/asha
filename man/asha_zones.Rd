@@ -30,7 +30,7 @@ A funcao pega dois objetos espaciais de classe sf, mescla e
          que os dois objetos tenham o mesmo crs definido previamente.
 }
 \examples{
-zonas <- asha_zones(centroides_sp, ubs_sp, "cd_geocodi", "cnes")
+zonas <- asha_zones(sf::st_centroid(setores), ubs_pontos, "cd_geocodi", "cnes")
 str(zonas)
 
 }

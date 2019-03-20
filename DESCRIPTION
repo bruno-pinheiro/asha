@@ -1,7 +1,7 @@
 Package: asha
 Type: Package
 Title: Analisys of Spatial Health Acessibility
-Version: 0.0-3
+Version: 0.0-4
 Authors@R: as.person(c(
     "Bruno Pinheiro <bruno.lahunmen@gmail.com> [aut, cre]", 
     "Alexandre Leichsenring <alexandre.leichsenring@usp.br> [aut]"
@@ -9,11 +9,11 @@ Authors@R: as.person(c(
 Description: Pacote para analise de acessibilidade espacial a saude. O pacote permite a criacao
              e analise espacial dos indicadores de acessibilidade viavel e acessibilidade competitiva
              de municipios. Feito para pesquisa na area de atencao basica de saude.
-Depends: R (>= 3.4.4)
+Depends: R (>= 3.3)
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
 Imports: dplyr, ggplot2, sf, rlang
-Suggests: stplanr, methods, scales, reshape2, gridExtra, ggmap, knitr, rmarkdown, nabor, kableExtra
-RoxygenNote: 6.0.1
+Suggests: stplanr, gridExtra, ggmap, nabor, tidyr, stringr, knitr, tibble, RCurl, methods, reshape2, scales, rmarkdown
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr

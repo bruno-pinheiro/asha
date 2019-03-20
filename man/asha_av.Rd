@@ -4,17 +4,19 @@
 \alias{asha_av}
 \title{Indicador AV}
 \usage{
-asha_av(df, id, segundos, pop, raio)
+asha_av(df, id, segundos, pop, model, raio)
 }
 \arguments{
 \item{df}{Um dataframe contendo as variaveis necessarias para o calculo. Veja os detalhes.}
 
-\item{id}{Variavel com o id das areas de saúde}
+\item{id}{Variavel com o id das areas de saude}
 
 \item{segundos}{Variavel com o tempo de deslocamento em segundos}
 
 \item{pop}{Variavel com o total de habitantes da
 menor unidade territorial}
+
+\item{model}{Modelo, ou malha territoral}
 
 \item{raio}{Variavel numerica indicando o tamanho do raio (em minutos)}
 }

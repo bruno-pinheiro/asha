@@ -8,83 +8,44 @@
 #' proximidade, respectivamente.
 #'
 #' @format Um dataset classe sf com os poligonos dos setores censitarios,
-#'     contendo 18953 linhas e 6 variaveis:
+#'     contendo 18953 linhas e 5 variaveis:
 #' \describe{
 #'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
+#'   \item{tipo}{Indica se o setor e urbano ou rural}
 #'   \item{cd_geocodd}{Codigo de identificacao do distrito}
 #'   \item{nm_distrit}{Nome do distrito}
-#'   \item{tipo}{Indica se o setor e urbano ou rural}
-#'   \item{pessoas_sp}{Numero de pessoas residentes nos setores censitarios}
-#'   \item{area}{Area do setor censitario em km^2^}
-#'   \item{dens_demografica}{Densidade demografica do setor censitario}
-#'   \item{cnes_}{Codigo CNES da UBS}
-#'   \item{distancias_}{Distancia em metros do percurso a pe entre o setor
-#'   censitario e a UBS}
-#'   \item{tempo_}{Tempo de viagem do percurso a pe entre o setor censitario
-#'   e a UBS em segundos}
-#'   \item{o_}{Indicador de Oportunidades (numero de medicos e enfermeiros
-#'   nas UBS)}
-#'   \item{d_}{Indicador de Demanda das UBS}
-#'   \item{ac_}{Indicador de Acessibilidade Competitiva (AC)}
-#'   \item{minutos}{Tempo de viagem do percurso a pe entre o setor censitario
-#'   e a UBS em minutos}
-#'   \item{av_}{Variavel binaria indicando se o setor esta ou nao no raio de
-#'   acessibilidade viavel por UBS}
-#'   \item{av_prop_}{Proporcao de habitantes residentes no raio de
-#'   acessibilidade viavel por UBS}
-#'   \item{minutos_classe_}{Tempo de viagem do percurso a pe dividido em seis
-#'   categorias}
-#'   \item{av_prop_decimais_vig}{Decimos de proporcao de habitantes residentes
-#'   no raio de acessibilidade viavel por UBS}
-#'   \item{ac_c_}{Quintis de acessibilidade competitiva}
 #'   \item{geometry}{Geometria dos polígonos}
 #' }
-"setores_sp"
+"setores"
 
-#' Total de moradores nos setores censitários de São Paulo (SP)
+#' Número de habitantes por setor censitario
 #'
-#' O dataset inclui uma variavel demografica extraida dos resultados do censo
-#' 2010 agregados por setor censitario contendo o numero de moradores em
-#' domicilios particulares e coletivos.
+#' Sao os dados da variavel V001 do arquivo Domicilio02_SP1.csv dos
+#' resultados do universo do Censo 2010 (IBGE), agregados por setor
+#' censitario.
 #'
-#' @format Um dataframe com 18363 linhas e 2 variaveis:
+#' @format Um dataset classe \code{tibble()} contendo 18363 linhas
+#' 2 variaveis:
+#'
 #' \describe{
 #'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
-#'   \item{pessoas_setor}{Numero de pessoas residentes nos setores censitarios}
+#'   \item{habitantes}{Numero de habitantes em domicílios particulares
+#'   e coletivos}
 #' }
-"pessoas_sp"
-
-#' Centroides dos setores censitarios da cidade de Sao Paulo
-#'
-#' Criado com a funcao st_centroid a partir do dataset \link{setores_sp}.
-#'
-#' @format Um dataset classe sf com os centroides dos setores censitarios,
-#'     contendo 18953 linhas e 1 variavel
-#' \describe{
-#'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
-#' }
-"centroides_sp"
+"populacao"
 
 #' Localizacao das UBS da cidade de Sao Paulo
 #'
-#' Traz as mesmas variaveis da base ubs_sp_areas, porem para os pontos de
-#' localizacao das UBS e nao os poligonos das respectivas areas. As UBS sao
-#' identificadas pelo seu numero CNES. Foram adicionadas variaveis com a
-#' quantidade de medicos e enfermeiros que trabalham em cada unidade.
+#' Geolocalização das UBS, representadas por pontos.
 #'
-#' @format Um dataset classe sf com os poligonos dos setores censitarios,
-#'     contendo 456 linhas e 8 variaveis:
+#' @format Um dataset classe sf com geometria de pontos,
+#'     contendo 456 linhas e 2 variaveis:
+#'
 #' \describe{
 #'   \item{cnes}{Codigo de identificacao da UBS}
-#'   \item{nomeubs}{Nome da UBS}
-#'   \item{sts}{Superintendencia de saude responsavel pela unidade}
-#'   \item{crs}{Coordenadoria regional de saude responsavel pela unidade}
-#'   \item{subpref}{Prefeitura regional onde a UBS esta localizada}
-#'   \item{total_med}{Quantidade de medicos da UBS}
-#'   \item{total_enf}{Quantidade de enfermeiros da UBS}
-#'   \item{geometry}{Geometria dos polígonos}
+#'   \item{geometry}{Geometria dos pontos}
 #' }
-"ubs_sp"
+"ubs_pontos"
 
 #' Areas de cobertura das UBS da cidade de Sao Paulo
 #'
@@ -95,7 +56,6 @@
 #' e enfermeiros que trabalham em cada unidade.
 #'
 #' @format Um data frame com 94765 linhas e 10 colunas
-#'
 #' \describe{
 #'   \item{cnes}{Codigo de identificacao da UBS}
 #'   \item{nomeubs}{Nome da UBS}
@@ -104,7 +64,21 @@
 #'   \item{subpref}{Prefeitura regional onde a UBS esta localizada}
 #'   \item{geometry}{Geometria dos polígonos}
 #' }
-"ubs_sp_areas"
+"ubs_malha"
+
+#' Profissionais de saude em Sao Paulo
+#'
+#' Dados obtidos no DATASUS, com o total de medicos e enfermeiros nas
+#' unidades de saude do municipio de Sao Paulo.
+#'
+#' @format Um dataset classe \code{tibble} contendo 18363 linhas
+#' 2 variaveis:
+#' \describe{
+#'   \item{cnes}{Codigo CNES da UBS}
+#'   \item{enfermeiros}{Quantidade de enfermeiros}
+#'   \item{medicos}{Quantidade de medicos}
+#' }
+"prof_saude"
 
 #' Distacias e tempos de viagem a pe entre setores censitarios e UBS
 #'
@@ -114,7 +88,6 @@
 #' as 5 UBS mais proximas de cada um.
 #'
 #' @format Um data frame contendo 94765 linhas e 10 variaveis:
-#'
 #' \describe{
 #'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
 #'   \item{cnes}{Codigo de identificacao da UBS}
@@ -127,114 +100,35 @@
 #'   \item{distancias}{Distancia de caminhada em metros}
 #'   \item{tempo}{Tempo de caminhada em segundos}
 #' }
-"ubs_sp_mobilidade"
-
-#' Pontos de UBS e centroides de setores censitarios unidos
-#'
-#' E a versao de ubs_sp_mobilidade com os casos que nao apresentaram
-#' dados de rotas para modelo vigente entre as 5 UBS com menores
-#' distancias euclidianas ate os setores censitarios.
-#'
-#' @format Um data frame contendo 94765 linhas e 10 variaveis:
-#'
-#' \describe{
-#'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
-#'   \item{cnes}{Codigo de identificacao da UBS}
-#'   \item{ox}{Latitude da origem}
-#'   \item{oy}{Longitude da origem}
-#'   \item{dx}{Latitude do destino}
-#'   \item{dy}{Longitude do destino}
-#'   \item{de}{Endereco de origem}
-#'   \item{para}{Endereco de destino}
-#'   \item{distancias}{Distancia de caminhada em metros}
-#'   \item{tempo}{Tempo de caminhada em segundos}
-#' }
-"rotas_faltas"
-
-#' Total de medicos e enfermeiros nas UBS de Sao Paulo
-#'
-#' O dataset conta com informacoes a respeito do total de profissionais
-#' de atencao basica de saude (medicos e enfermeiros) trabalhando em
-#' cada uma das UBS da cidade de Sao Paulo.
-#'
-#' @format Um data frame com 456 linhas e 3 variaveis:
-#'
-#' \describe{
-#'   \item{cnes}{Codigo de identificacao da UBS}
-#'   \item{total_med}{Quantidade de medicos da UBS}
-#'   \item{total_enf}{Quantidade de enfermeiros da UBS}
-#'}
-"ubs_sp_profissionais"
-
-
-
-#' Pontos de UBS e centroides de setores censitarios unidos
-#'
-#' O dataset reune os pontos de UBS e dos centroides dos setores
-#' censitarios. É o formato padrão do parametro \code{zones} da
-#' funcao \code{asha_dists}
-#'
-#' @format Um dataset classe sf com pontos, contendo
-#'         19409 linhas e 1 variavel:
-#'
-#' \describe{
-#'   \item{id}{Codigo de identificacao das origens e destinos}
-#' }
-"zonas"
-
-#' Pontos de UBS e centroides de setores censitarios unidos
-#'
-#' O dataset reune os pontos de UBS e dos centroides dos setores
-#' censitarios. É o formato padrão do parametro \code{zones} da
-#' funcao \code{asha_dists}
-#'
-#' @format Um dataset classe sf com pontos, contendo
-#'         19409 linhas e 1 variavel:
-#'
-#' \describe{
-#'   \item{id}{Codigo de identificacao das origens e destinos}
-#' }
-"rotas_faltas"
+"od_viagens"
 
 #' Setores censitarios da cidade de Sao Paulo
 #'
 #' O dataset foi estruturado a partir de dados do Censo 2010 disponibilidos
 #' pelo IBGE (malha de setores censitarios do estado de Sao Paulo) e resultados
-#' agregados por setor censitario para a cidade de Sao Paulo. Alem disso inclui
-#' variaveis calcularas: o numero de habitantes, a area e densidade demografica.
-#' As variaveis com sufixo _vig e _prox referem-se aos modelos vigente e de
-#' proximidade, respectivamente.
+#' agregados por setor censitario para a cidade de Sao Paulo.
 #'
-#' @format Um dataset classe sf com os poligonos dos setores censitarios,
-#'     contendo 18953 linhas e 6 variaveis:
+#' @format Um dataset classe sf com os poligonos dos setores censitarios
+#'         contendo 37906 linhas e 15 variaveis:
 #' \describe{
 #'   \item{cd_geocodi}{Codigo de identificacao do setor censitario}
 #'   \item{cnes}{Codigo CNES da UBS}
-#'   \item{dens_demografica}{Densidade demografica do setor censitario}
-#'   \item{pessoas_sp}{Numero de pessoas residentes nos setores censitarios}
-#'   \item{distancias}{Distancia em metros do percurso a pe entre o setor
-#'   censitario e a UBS}
+#'   \item{malha}{Indica se a observacao se refere a malha vigente ou ao experimento}
+#'   \item{habitantes}{Numero de pessoas residentes nos setores censitarios}
+#'   \item{enfermeiros}{Numero de enfermeiros nas UBS}
+#'   \item{medicos}{Numero de medicos nas UBS}
+#'   \item{oportunidades}{Indicador de Oportunidades -- medicos + enfermeiros}
+#'   \item{demanda}{Indicador de Demanda das UBS}
+#'   \item{distancia}{Distancia em metros do percurso a pe entre o setor
+#'   e a UBS}
 #'   \item{tempo}{Tempo de viagem do percurso a pe entre o setor censitario
 #'   e a UBS em segundos}
-#'   \item{total_enf}{Numero de enfermeiros nas UBS}
-#'   \item{total_med}{Numero de medicos nas UBS}
-#'   \item{oportunidades}{Indicador de Oportunidades (numero de medicos e enfermeiros
-#'   nas UBS)}
-#'   \item{modelo}{Variavel binaria indicando se a observacao se refere ao modelo
-#'   vigente ou de proximidade}
-#'   \item{demanda}{Indicador de Demanda das UBS}
-#'   \item{ac}{Indicador de Acessibilidade Competitiva (AC)}
 #'   \item{minutos}{Tempo de viagem do percurso a pe entre o setor censitario
 #'   e a UBS em minutos}
-#'   \item{av}{Variavel binaria indicando se o setor esta ou nao no raio de
-#'   acessibilidade viavel por UBS}
+#'   \item{av}{Indica se o setor esta ou nao no raio de acessibilidade viavel da UBS}
 #'   \item{av_prop_}{Proporcao de habitantes residentes no raio de
 #'   acessibilidade viavel por UBS}
-#'   \item{minutos_classe_}{Tempo de viagem do percurso a pe dividido em seis
-#'   categorias}
-#'   \item{av_prop_decimais_vig}{Decimos de proporcao de habitantes residentes
-#'   no raio de acessibilidade viavel por UBS}
-#'   \item{ac_classes}{Quintis de acessibilidade competitiva}
+#'   \item{ac}{Indicador de Acessibilidade Competitiva}
 #'   \item{geometry}{Geometria dos polígonos}
 #' }
-"od"
+"od_indicadores"

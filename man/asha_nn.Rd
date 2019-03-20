@@ -32,9 +32,10 @@ A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
          codigos de identificacao do destino e da origem.
 }
 \examples{
-data("ubs_sp")
-data("centroides_sp")
-asha_nn(ubs_sp, centroides_sp, "cnes", "cd_geocodi", 3)
+data("ubs_pontos")
+data("setores")
+cent <- sf::st_centroid(setores)
+asha_nn(ubs_pontos, cent, "cnes", "cd_geocodi", 3)
 
 }
 \seealso{

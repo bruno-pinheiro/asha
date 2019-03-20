@@ -29,9 +29,11 @@ A funcao identifica os pontos localizados dentro de cada poligono.
          sf::st_intersect para realizar a intersecao.
 }
 \examples{
-data("ubs_sp_areas")
-data("centroides_sp")
-asha_intersect(ubs_sp_areas, centroides_sp, "cnes", "cd_geocodi")
+data("ubs_malha")
+data("setores")
+asha_intersect(ubs_malha,
+               sf::st_centroid(setores),
+               "cnes", "cd_geocodi")
 
 }
 \seealso{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_functions.R
 \name{asha_dists}
 \alias{asha_dists}
-\title{Obter informacões de distancia e tempo de viagem por modal}
+\title{Obter informacoes de distancia e tempo de viagem por modal}
 \usage{
 asha_dists(fluxo, zonas, modal = "walking", api)
 }

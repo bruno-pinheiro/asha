@@ -19,20 +19,18 @@
 #' @examples
 #' # get_zip()
 #'
-#' @importFrom utils download.file unzip
-#'
 #' @export
 get_zip <- function(url, savedir = NULL, junkpaths = TRUE) {
   # baixar arquivo
   if (is.null(savedir)){
     if (!file.exists(tempdir())) { dir.create(tempdir()) }
     tmp <- tempfile(fileext = ".zip")
-    download.file(url, destfile = tmp)
-    unzip(tmp, exdir = tempdir(), junkpaths = junkpaths)
+    utils::download.file(url, destfile = tmp)
+    utils::unzip(tmp, exdir = tempdir(), junkpaths = junkpaths)
   } else if (is.character(savedir)){
     tmp <- tempfile(fileext = ".zip")
-    download.file(url, destfile = tmp)
-    unzip(tmp, exdir = savedir, junkpaths = junkpaths)
+    utils::download.file(url, destfile = tmp)
+    utils::unzip(tmp, exdir = savedir, junkpaths = junkpaths)
   } else {
     message("savedir must be a character vector indicating some folder path")
   }
@@ -61,8 +59,6 @@ get_zip <- function(url, savedir = NULL, junkpaths = TRUE) {
 #' @examples
 #' get_censo("rr")
 #' clean_tmp()
-#'
-#' @importFrom utils download.file unzip
 #'
 #' @export
 get_censo <- function(state,

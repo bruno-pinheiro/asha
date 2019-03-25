@@ -28,14 +28,14 @@
 #'                sf::st_centroid(setores),
 #'                "cnes", "cd_geocodi")
 #'
-#' @import dplyr sf
+#' @importFrom magrittr "%>%"
 #'
 #' @export
 asha_intersect <- function(sf1, sf2, id1, id2) {
   sf1 %>%
-    st_join(select(sf2, id2), join = st_intersects) %>%
+    sf::st_join(dplyr::select(sf2, id2), join = sf::st_intersects) %>%
     as.data.frame() %>%
-    select(id2, id1)
+    dplyr::select(id2, id1)
 }
 
 #' @title Encontrar os n pontos mais proximos
@@ -68,8 +68,8 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' cent <- sf::st_centroid(setores)
 #' asha_nn(ubs_pontos, cent, "cnes", "cd_geocodi", 3)
 #'
-#' @import sf dplyr
 #' @importFrom rlang :=
+#' @importFrom magrittr "%>%"
 #'
 #' @export
 asha_nn <- function(sf1, sf2, id1, id2, n) {
@@ -78,17 +78,18 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
   nn.idx.value = NULL; nn.dists.value = NULL
   de = NULL; para = NULL; proximidade = NULL; distancia = NULL
 
-  df <- list(coords1 = st_coordinates(sf1), coords2 = st_coordinates(sf2))
+  df <- list(coords1 = sf::st_coordinates(sf1), coords2 = sf::st_coordinates(sf2))
   df <- nabor::knn(data = df[[1]], query = df[[2]], k = n) %>% reshape2::melt()
   df <- as.data.frame(split(df, df$L1)) %>%
-    mutate(!!id2 := pull(as.data.frame(sf2), !!id2)[nn.dists.Var1],
-           !!id1 := pull(as.data.frame(sf1), !!id1)[nn.idx.value]) %>%
-    rename(proximidade = nn.dists.Var2, distancia = nn.dists.value) %>%
-    select(!!id2, !!id1, proximidade, distancia)
+    dplyr::mutate(!!id2 := dplyr::pull(as.data.frame(sf2), !!id2)[nn.dists.Var1],
+                  !!id1 := dplyr::pull(as.data.frame(sf1), !!id1)[nn.idx.value]) %>%
+    dplyr::rename(proximidade = nn.dists.Var2, distancia = nn.dists.value) %>%
+    dplyr::select(!!id2, !!id1, proximidade, distancia) %>%
+    tibble::as_tibble()
   return(df)
 }
 
-#' @title Obter informacões de distancia e tempo de viagem por modal
+#' @title Obter informacoes de distancia e tempo de viagem por modal
 #' @name asha_dists
 #'
 #' @description Permite o levantamento de dados de rotas de viagem para
@@ -132,7 +133,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
   duration = NULL
   currency = NULL
   fare = NULL
-  zonas <- methods::as(st_transform(zonas, 4326), "Spatial")
+  zonas <- methods::as(sf::st_transform(zonas, 4326), "Spatial")
   od <- stplanr::od2odf(flow = fluxo, zones = zonas)
   uma_linha <- data.frame(from_addresses = NA, to_addresses = NA,
                           distances = NA, duration = NA,
@@ -153,8 +154,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
         }
       )
     }
-    return(output <-
-             output %>%
+    return(output <- output %>%
              dplyr::rename(de = from_addresses, para = to_addresses,
                            distancias = distances, tempo = duration,
                            moeda = currency, tarifa = fare))
@@ -173,8 +173,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
           }
         )
       }
-      return(output <-
-               output %>%
+      return(output <-output %>%
                dplyr::rename(de = from_addresses, para = to_addresses,
                              distancias = distances, tempo = duration,
                              moeda = currency, tarifa = fare))
@@ -193,8 +192,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
             }
           )
         }
-        return(output <-
-                 output %>%
+        return(output <- output %>%
                  dplyr::rename(de = from_addresses, para = to_addresses,
                                distancias = distances, tempo = duration,
                                moeda = currency, tarifa = fare))
@@ -212,8 +210,7 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
                 }
               )
             }
-            return(output <-
-                     output %>%
+            return(output <-output %>%
                      dplyr::rename(de = from_addresses, para = to_addresses,
                                    distancias = distances, tempo = duration,
                                    moeda = currency, tarifa = fare))
@@ -364,7 +361,7 @@ asha_av <- function(df, id, segundos, pop, model, raio) {
 
   df <- df %>%
     dplyr::mutate(minutos = !! segundos / 60,
-                  av = if_else(minutos <= raio, "Sim", "Nao"))
+                  av = dplyr::if_else(minutos <= raio, "Sim", "Nao"))
 
   if (missing(model)){
     av_x <- df %>%
@@ -389,16 +386,16 @@ asha_av <- function(df, id, segundos, pop, model, raio) {
   if(nrow(av_x) < nrow(df %>% dplyr::distinct(!! id))) {
     av_x <- av_x %>%
       rbind(tibble::tibble(
-        cnes = df[!(df[[quo_name(id)]] %in% av_x[[quo_name(id)]]), ] %>%
+        cnes = df[!(df[[rlang::quo_name(id)]] %in% av_x[[rlang::quo_name(id)]]), ] %>%
           dplyr::pull(!! id) %>% unique(),
         av_prop = 0))
   }
 
   if (missing(model)){
-    df <- df %>% dplyr::left_join(av_x, by = c(quo_name(id)))
+    df <- df %>% dplyr::left_join(av_x, by = c(rlang::quo_name(id)))
     return(df)
   } else {
-    df <- df %>% dplyr::left_join(av_x, by = c(quo_name(id), quo_name(dplyr::enquo(model))))
+    df <- df %>% dplyr::left_join(av_x, by = c(rlang::quo_name(id), rlang::quo_name(dplyr::enquo(model))))
     return(df)
   }
 }

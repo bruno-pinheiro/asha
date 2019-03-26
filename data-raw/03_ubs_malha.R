@@ -1,17 +1,9 @@
-# BAIXAR OS DADOS -------------------------------------------------------------
-data_comp <- osfr::osf_retrieve_node("bzk34") %>%
-  osfr::osf_ls_nodes("Data")
-
-files <- osfr::osf_ls_files(data_comp) %>%
-  dplyr::filter(stringr::str_detect(name, "ubs_malha"))
-
-asha::clean_tmp()
-tmp <- tempfile(fileext = ".rda")
-osf_download(files, path = tmp)
-
 # IMPORTAR OS DADOS -----------------------------------------------------------
-file <- list_tmp("rda")
-load(file)
+file <- system.file("extdata/ubs_sp_areas",
+                    "AA_UBS_MSP_2015_2016_UTM_SIRGAS2000_fuso23S.shp",
+                    package = "asha")
+
+ubs_malha <- sf::read_sf(file)
 
 # LIMPAR OS DADOS -------------------------------------------------------------
 ubs_malha <- ubs_malha %>%

@@ -1,16 +1,5 @@
-# BAIXAR OS DADOS -------------------------------------------------------------
-data_comp <- osfr::osf_retrieve_node("bzk34") %>%
-  osfr::osf_ls_nodes("Data")
-
-files <- osfr::osf_ls_files(data_comp) %>%
-  filter(stringr::str_detect(name, "ubs_pontos"))
-
-asha::clean_tmp()
-tmp <- tempfile(fileext = ".rda")
-osf_download(files, path = tmp)
-
 # IMPORTAR OS DADOS -----------------------------------------------------------
-file <- list_tmp("rda")
+file <- system.file("extdata", "ubs_pontos-raw.rda", package = "asha")
 load(file)
 data("ubs_malha")
 

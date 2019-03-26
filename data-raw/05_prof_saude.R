@@ -1,9 +1,6 @@
 # BAIXAR OS DADOS -------------------------------------------------------------
-data_comp <- osfr::osf_retrieve_node("bzk34") %>%
-  osfr::osf_ls_nodes("Data")
-
-files <- osfr::osf_ls_files(data_comp) %>%
-  dplyr::filter(stringr::str_detect(name, "enf") | stringr::str_detect(name, "med"))
+enf <- fread(system.file("extdata", "enfermeiros.csv", package = "asha"))
+med <- fread(system.file("extdata", "medicos.csv", package = "asha"))
 
 asha::clean_tmp()
 tmp <- tempfile(fileext = "csv")

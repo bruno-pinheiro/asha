@@ -1,17 +1,5 @@
-# BAIXAR OS DADOS -------------------------------------------------------------
-data_comp <- osfr::osf_retrieve_node("bzk34") %>%
-  osfr::osf_ls_nodes("Data")
-
-files <- osfr::osf_ls_files(data_comp) %>%
-  filter(stringr::str_detect(name, "^set"))
-
-asha::clean_tmp()
-tmp <- tempfile(fileext = ".rda")
-osf_download(files, path = tmp)
-
 # IMPORTAR OS DADOS -----------------------------------------------------------
-file <- list_tmp("rda")
-load(file)
+load(system.file("extdata", "setores_censitarios-raw.rda", package = "asha"))
 
 # LIMPAR OS DADOS -------------------------------------------------------------
 setores <- setores %>%
@@ -22,6 +10,6 @@ setores <- setores %>%
   lwgeom::st_make_valid()
 
 # EXPORTAR OS DADOS -----------------------------------------------------------
-usethis::use_data(setores)
+usethis::use_data(setores, overwrite = TRUE)
 
 rm(list = ls())

@@ -1,32 +1,20 @@
-# BAIXAR OS DADOS -------------------------------------------------------------
-data_comp <- osfr::osf_retrieve_node("bzk34") %>%
-  osfr::osf_ls_nodes("Data")
-
-file <- osfr::osf_ls_files(data_comp) %>%
-  filter(stringr::str_detect(name, "pop"))
-
-asha::clean_tmp()
-tmp <- tempfile(fileext = ".rda")
-osf_download(file, path = tmp)
-
 # IMPORTAR OS DADOS -----------------------------------------------------------
-file <- list_tmp("rda")
-load(file)
+load(system.file("extdata", "populacao_sp_capital-raw.rda", package = "asha"))
+load(system.file("extdata", "renda_sp_capital-raw.rda", package = "asha"))
+
+library(magrittr)
 
 # LIMPAR OS DADOS -------------------------------------------------------------
+renda <-   dplyr::mutate(renda, Cod_setor = as.character(Cod_setor))
 populacao <- populacao %>%
-  dplyr::rename(cd_geocodi = Cod_setor) %>%
-  # V001 = populacao moradoras em domicílios particulares e coletivos
-  dplyr::select(cd_geocodi, habitantes = V001)
-
-########## RESOLUÇÃO TEMPORÁRIA DE PROBLEMA EM CD_GEOCODI #####################
-load(system.file("extdata", "pessoas_sp.rda", package = "asha"))
-
-populacao <- populacao[, -1] %>%
-  cbind(cd_geocodi = pessoas_sp[, 1]) %>%
-  mutate(cd_geocodi = as.character(cd_geocodi)) %>%
-  dplyr::select(cd_geocodi, habitantes)%>%
-  tibble::as_tibble()
+  # V002 = renda dos domicílios particulares
+  dplyr::bind_cols(select(renda, cd_geocodi = Cod_setor, renda_domicilios = V002)) %>%
+  # V001 = populacao moradora em domicílios particulares e coletivos
+  # V045 = homens moradores em domicílios particulares e coletivos
+  # V089 = mulheres moradoras em domicílios particulares e coletivos
+  dplyr::select(cd_geocodi,
+                habitantes = V001, homens = V045, mulheres = V089,
+                renda_domicilios)
 
 # EXPORTAR OS DADOS -----------------------------------------------------------
 usethis::use_data(populacao)

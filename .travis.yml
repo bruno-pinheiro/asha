@@ -6,7 +6,7 @@ cache: packages
 
 sudo: false
 
-dist: trusty
+dist: xenial
 
 before_install:
   - sudo add-apt-repository ppa:ubuntugis/ppa --yes

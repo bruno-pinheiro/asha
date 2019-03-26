@@ -22,12 +22,13 @@
 #'          \code{\link[sf]{st_join}}
 #'
 #' @examples
-#' # data("ubs_malha")
-#' # data("setores")
-#' # asha_intersect(ubs_malha,
-#'                  sf::st_centroid(setores),
-#'                  "cnes", "cd_geocodi")
-#'
+#' \dontrun{
+#' data("ubs_malha")
+#' data("setores")
+#' asha_intersect(ubs_malha,
+#'                sf::st_centroid(setores),
+#'                "cnes", "cd_geocodi")
+#' }
 #' @importFrom magrittr "%>%"
 #'
 #' @export
@@ -63,10 +64,12 @@ asha_intersect <- function(sf1, sf2, id1, id2) {
 #' @seealso \code{\link[nabor]{knn}}
 #'
 #' @examples
-#' # data("ubs_pontos")
-#' # data("setores")
-#' # cent <- sf::st_centroid(setores)
-#' # asha_nn(ubs_pontos, cent, "cnes", "cd_geocodi", 3)
+#' \dontrun{
+#' data("ubs_pontos")
+#' data("setores")
+#' cent <- sf::st_centroid(setores)
+#' asha_nn(ubs_pontos, cent, "cnes", "cd_geocodi", 3)
+#' }
 #'
 #' @importFrom rlang :=
 #' @importFrom magrittr "%>%"
@@ -120,10 +123,12 @@ asha_nn <- function(sf1, sf2, id1, id2, n) {
 #'          \code{\link[stplanr]{od2odf}}
 #'
 #' @examples
-#' # cent <- sf::st_centroid(setores)
-#' # x <- asha_nn(ubs_pontos, setores, "cnes", "cd_geocodi", 1)
-#' # zonas <- asha_zones(cent, ubs_pontos, "cd_geocodi", "cnes")
-#' # asha_dists(x[500:501, ], zonas, "transit")
+#' \dontrun{
+#' cent <- sf::st_centroid(setores)
+#' x <- asha_nn(ubs_pontos, setores, "cnes", "cd_geocodi", 1)
+#' zonas <- asha_zones(cent, ubs_pontos, "cd_geocodi", "cnes")
+#' asha_dists(x[500:501, ], zonas, "transit")
+#' }
 #'
 #' @export
 asha_dists <- function(fluxo, zonas, modal = "walking", api) {
@@ -260,8 +265,10 @@ asha_dists <- function(fluxo, zonas, modal = "walking", api) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # zonas <- asha_zones(sf::st_centroid(setores), ubs_pontos, "cd_geocodi", "cnes")
-#' # str(zonas)
+#' \dontrun{
+#' zonas <- asha_zones(sf::st_centroid(setores), ubs_pontos, "cd_geocodi", "cnes")
+#' str(zonas)
+#' }
 #'
 #' @export
 asha_zones <- function(sf1, sf2, id1, id2) {
@@ -304,7 +311,9 @@ asha_zones <- function(sf1, sf2, id1, id2) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # asha_ac(df1, pop, area, model)
+#' \dontrun{
+#' asha_ac(df1, pop, area, model)
+#' }
 #'
 #' @export
 asha_ac <- function(df1, pop, area, model, n = 1) {
@@ -350,7 +359,9 @@ asha_ac <- function(df1, pop, area, model, n = 1) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # asha_av(df, id, tempo, pop, raio)
+#' \dontrun{
+#' asha_av(df, id, tempo, pop, raio)
+#' }
 #'
 #' @export
 asha_av <- function(df, id, segundos, pop, model, raio) {

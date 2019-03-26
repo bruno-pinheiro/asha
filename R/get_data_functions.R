@@ -17,7 +17,9 @@
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # get_zip()
+#' \dontrun{
+#' get_zip()
+#' }
 #'
 #' @export
 get_zip <- function(url, savedir = NULL, junkpaths = TRUE) {
@@ -57,8 +59,10 @@ get_zip <- function(url, savedir = NULL, junkpaths = TRUE) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # get_censo("rr")
-#' # clean_tmp()
+#' \dontrun{
+#' get_censo("rr")
+#' clean_tmp()
+#' }
 #'
 #' @export
 get_censo <- function(state,

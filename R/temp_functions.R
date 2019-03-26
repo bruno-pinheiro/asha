@@ -23,12 +23,13 @@
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#'
+#'\dontrun{
 #' # to list files in tempdir() root
-#' # list_tmp()
+#' list_tmp()
 #'
 #' # to list files of an extension
-#' # list_tmp(".zip")
+#' list_tmp(".zip")
+#' }
 #'
 #' @export
 list_tmp <- function(ext = NULL, full = TRUE) {
@@ -62,7 +63,9 @@ list_tmp <- function(ext = NULL, full = TRUE) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' # clean_tmp()
+#' \dontrun{
+#' clean_tmp()
+#' }
 #'
 #' @export
 clean_tmp <- function(tmpdir = tempdir()) {

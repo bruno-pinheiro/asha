@@ -6,7 +6,7 @@ cache: packages
 
 sudo: false
 
-dist: xenial
+dist: trusty
 
 before_install:
   - sudo add-apt-repository ppa:ubuntugis/ppa --yes
@@ -18,7 +18,7 @@ r_packages:
   - rgdal
   - rgeos
 
-warnings_are_errors: true
+warnings_are_errors: false
 
 before_deploy: Rscript -e 'remotes::install_cran("pkgdown");remotes::install_github("ropensci/rotemplate")'
 

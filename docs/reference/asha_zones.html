@@ -155,13 +155,10 @@
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>zonas</span> <span class='kw'>&lt;-</span> <span class='fu'>asha_zones</span>(<span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/sf/topics/geos_unary'>st_centroid</a></span>(<span class='no'>setores</span>), <span class='no'>ubs_pontos</span>, <span class='st'>"cd_geocodi"</span>, <span class='st'>"cnes"</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: st_centroid assumes attributes are constant over geometries of x</span></div><div class='input'><span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/str'>str</a></span>(<span class='no'>zonas</span>)</div><div class='output co'>#&gt; Classes ‘sf’, ‘tbl_df’, ‘tbl’ and 'data.frame':	19408 obs. of  3 variables:
-#&gt;  $ id      : chr  "355030804000079" "355030804000080" "355030804000081" "355030804000082" ...
-#&gt;  $ tipo    : chr  "cd_geocodi" "cd_geocodi" "cd_geocodi" "cd_geocodi" ...
-#&gt;  $ geometry:sfc_POINT of length 19408; first list element:  'XY' num  345013 7391354
-#&gt;  - attr(*, "sf_column")= chr "geometry"
-#&gt;  - attr(*, "agr")= Factor w/ 3 levels "constant","aggregate",..: NA NA
-#&gt;   ..- attr(*, "names")= chr  "id" "tipo"</div><div class='input'>
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>zonas</span> <span class='kw'>&lt;-</span> <span class='fu'>asha_zones</span>(<span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/sf/topics/geos_unary'>st_centroid</a></span>(<span class='no'>setores</span>), <span class='no'>ubs_pontos</span>, <span class='st'>"cd_geocodi"</span>, <span class='st'>"cnes"</span>)
+<span class='fu'><a href='https://www.rdocumentation.org/packages/utils/topics/str'>str</a></span>(<span class='no'>zonas</span>)
+<span class='co'># }</span><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

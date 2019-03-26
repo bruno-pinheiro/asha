@@ -167,9 +167,12 @@ walking, driving ou transit</p></td>
     
 
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'><span class='no'>cent</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/sf/topics/geos_unary'>st_centroid</a></span>(<span class='no'>setores</span>)</div><div class='output co'>#&gt; <span class='warning'>Warning: st_centroid assumes attributes are constant over geometries of x</span></div><div class='input'><span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='asha_nn.html'>asha_nn</a></span>(<span class='no'>ubs_pontos</span>, <span class='no'>setores</span>, <span class='st'>"cnes"</span>, <span class='st'>"cd_geocodi"</span>, <span class='fl'>1</span>)
+    <pre class="examples"><span class='co'># NOT RUN {</span>
+<span class='no'>cent</span> <span class='kw'>&lt;-</span> <span class='kw pkg'>sf</span><span class='kw ns'>::</span><span class='fu'><a href='https://www.rdocumentation.org/packages/sf/topics/geos_unary'>st_centroid</a></span>(<span class='no'>setores</span>)
+<span class='no'>x</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='asha_nn.html'>asha_nn</a></span>(<span class='no'>ubs_pontos</span>, <span class='no'>setores</span>, <span class='st'>"cnes"</span>, <span class='st'>"cd_geocodi"</span>, <span class='fl'>1</span>)
 <span class='no'>zonas</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='asha_zones.html'>asha_zones</a></span>(<span class='no'>cent</span>, <span class='no'>ubs_pontos</span>, <span class='st'>"cd_geocodi"</span>, <span class='st'>"cnes"</span>)
-<span class='fu'>asha_dists</span>(<span class='no'>x</span>[<span class='fl'>500</span>:<span class='fl'>501</span>, ], <span class='no'>zonas</span>, <span class='st'>"transit"</span>)</div><div class='output co'>#&gt; <span class='message'>Sent this request: https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&amp;origins=-23.54264604416,-46.4813205087837&amp;destinations=-23.5787929282361,-46.5100964979638&amp;mode=transit&amp;key=AIzaSyBTGFLbzt7qntmP4ueqesSYCd90KbLFH-c</span></div><div class='output co'>#&gt; <span class='message'>Sent this request: https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&amp;origins=-23.5389116682702,-46.4867657353179&amp;destinations=-23.5787929282361,-46.5100964979638&amp;mode=transit&amp;key=AIzaSyBTGFLbzt7qntmP4ueqesSYCd90KbLFH-c</span></div><div class='input'>
+<span class='fu'>asha_dists</span>(<span class='no'>x</span>[<span class='fl'>500</span>:<span class='fl'>501</span>, ], <span class='no'>zonas</span>, <span class='st'>"transit"</span>)
+<span class='co'># }</span><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">

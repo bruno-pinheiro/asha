@@ -247,67 +247,67 @@
 <a class="sourceLine" id="cb3-4" data-line-number="4"><span class="kw"><a href="../reference/get_zip.html">get_zip</a></span>(url)</a></code></pre></div>
 <p>O resultado mostra que os dados foram corretamente baixados. Como não indiquei nenhum diretório de salvamento os dados estão na pasta temporária. Aqui é que entra a função <code><a href="../reference/list_tmp.html">list_tmp()</a></code>. Com ela eu posso listar os arquivos da pasta temporária.</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="../reference/list_tmp.html">list_tmp</a></span>()</a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co">#&gt;  [1] "/tmp/RtmpizigZK/file15075e29b5e8.zip"                                            </span></a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co">#&gt;  [2] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.dbf"       </span></a>
-<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="co">#&gt;  [3] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"       </span></a>
-<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="co">#&gt;  [4] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shx"       </span></a>
-<a class="sourceLine" id="cb4-6" data-line-number="6"><span class="co">#&gt;  [5] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.dbf"                          </span></a>
-<a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co">#&gt;  [6] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                          </span></a>
-<a class="sourceLine" id="cb4-8" data-line-number="8"><span class="co">#&gt;  [7] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shx"                          </span></a>
-<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="co">#&gt;  [8] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.dbf"                      </span></a>
-<a class="sourceLine" id="cb4-10" data-line-number="10"><span class="co">#&gt;  [9] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                      </span></a>
-<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co">#&gt; [10] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shx"                      </span></a>
-<a class="sourceLine" id="cb4-12" data-line-number="12"><span class="co">#&gt; [11] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.dbf"</span></a>
-<a class="sourceLine" id="cb4-13" data-line-number="13"><span class="co">#&gt; [12] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a>
-<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; [13] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shx"</span></a>
-<a class="sourceLine" id="cb4-15" data-line-number="15"><span class="co">#&gt; [14] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.dbf"                 </span></a>
-<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">#&gt; [15] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                 </span></a>
-<a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt; [16] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shx"                 </span></a>
-<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="co">#&gt; [17] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.dbf"               </span></a>
-<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt; [18] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"               </span></a>
-<a class="sourceLine" id="cb4-20" data-line-number="20"><span class="co">#&gt; [19] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shx"               </span></a>
-<a class="sourceLine" id="cb4-21" data-line-number="21"><span class="co">#&gt; [20] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.dbf"               </span></a>
-<a class="sourceLine" id="cb4-22" data-line-number="22"><span class="co">#&gt; [21] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"               </span></a>
-<a class="sourceLine" id="cb4-23" data-line-number="23"><span class="co">#&gt; [22] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shx"               </span></a>
-<a class="sourceLine" id="cb4-24" data-line-number="24"><span class="co">#&gt; [23] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.dbf"         </span></a>
-<a class="sourceLine" id="cb4-25" data-line-number="25"><span class="co">#&gt; [24] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"         </span></a>
-<a class="sourceLine" id="cb4-26" data-line-number="26"><span class="co">#&gt; [25] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shx"         </span></a>
-<a class="sourceLine" id="cb4-27" data-line-number="27"><span class="co">#&gt; [26] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.dbf"                            </span></a>
-<a class="sourceLine" id="cb4-28" data-line-number="28"><span class="co">#&gt; [27] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                            </span></a>
-<a class="sourceLine" id="cb4-29" data-line-number="29"><span class="co">#&gt; [28] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shx"                            </span></a>
-<a class="sourceLine" id="cb4-30" data-line-number="30"><span class="co">#&gt; [29] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.dbf"                        </span></a>
-<a class="sourceLine" id="cb4-31" data-line-number="31"><span class="co">#&gt; [30] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                        </span></a>
-<a class="sourceLine" id="cb4-32" data-line-number="32"><span class="co">#&gt; [31] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shx"                        </span></a>
-<a class="sourceLine" id="cb4-33" data-line-number="33"><span class="co">#&gt; [32] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.dbf"  </span></a>
-<a class="sourceLine" id="cb4-34" data-line-number="34"><span class="co">#&gt; [33] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"  </span></a>
-<a class="sourceLine" id="cb4-35" data-line-number="35"><span class="co">#&gt; [34] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shx"  </span></a>
-<a class="sourceLine" id="cb4-36" data-line-number="36"><span class="co">#&gt; [35] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.dbf"                   </span></a>
-<a class="sourceLine" id="cb4-37" data-line-number="37"><span class="co">#&gt; [36] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                   </span></a>
-<a class="sourceLine" id="cb4-38" data-line-number="38"><span class="co">#&gt; [37] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shx"                   </span></a>
-<a class="sourceLine" id="cb4-39" data-line-number="39"><span class="co">#&gt; [38] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.dbf"                 </span></a>
-<a class="sourceLine" id="cb4-40" data-line-number="40"><span class="co">#&gt; [39] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"                 </span></a>
-<a class="sourceLine" id="cb4-41" data-line-number="41"><span class="co">#&gt; [40] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shx"                 </span></a>
-<a class="sourceLine" id="cb4-42" data-line-number="42"><span class="co">#&gt; [41] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.dbf"                 </span></a>
-<a class="sourceLine" id="cb4-43" data-line-number="43"><span class="co">#&gt; [42] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"                 </span></a>
-<a class="sourceLine" id="cb4-44" data-line-number="44"><span class="co">#&gt; [43] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shx"</span></a></code></pre></div>
-<p>Além do arquivo baixado, que ganhou o nome temporário /tmp/RtmpizigZK/file15075e29b5e8.zip, todos os arquivos que estavam compactados nele estão presentes, já descompactados.</p>
+<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co">#&gt;  [1] "/tmp/RtmpB3tMyv/file27cf1a2e9a69.zip"                                            </span></a>
+<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co">#&gt;  [2] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.dbf"       </span></a>
+<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="co">#&gt;  [3] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"       </span></a>
+<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="co">#&gt;  [4] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shx"       </span></a>
+<a class="sourceLine" id="cb4-6" data-line-number="6"><span class="co">#&gt;  [5] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.dbf"                          </span></a>
+<a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co">#&gt;  [6] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                          </span></a>
+<a class="sourceLine" id="cb4-8" data-line-number="8"><span class="co">#&gt;  [7] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shx"                          </span></a>
+<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="co">#&gt;  [8] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.dbf"                      </span></a>
+<a class="sourceLine" id="cb4-10" data-line-number="10"><span class="co">#&gt;  [9] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                      </span></a>
+<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co">#&gt; [10] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shx"                      </span></a>
+<a class="sourceLine" id="cb4-12" data-line-number="12"><span class="co">#&gt; [11] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.dbf"</span></a>
+<a class="sourceLine" id="cb4-13" data-line-number="13"><span class="co">#&gt; [12] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a>
+<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; [13] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shx"</span></a>
+<a class="sourceLine" id="cb4-15" data-line-number="15"><span class="co">#&gt; [14] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.dbf"                 </span></a>
+<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">#&gt; [15] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                 </span></a>
+<a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt; [16] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shx"                 </span></a>
+<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="co">#&gt; [17] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.dbf"               </span></a>
+<a class="sourceLine" id="cb4-19" data-line-number="19"><span class="co">#&gt; [18] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"               </span></a>
+<a class="sourceLine" id="cb4-20" data-line-number="20"><span class="co">#&gt; [19] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shx"               </span></a>
+<a class="sourceLine" id="cb4-21" data-line-number="21"><span class="co">#&gt; [20] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.dbf"               </span></a>
+<a class="sourceLine" id="cb4-22" data-line-number="22"><span class="co">#&gt; [21] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"               </span></a>
+<a class="sourceLine" id="cb4-23" data-line-number="23"><span class="co">#&gt; [22] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shx"               </span></a>
+<a class="sourceLine" id="cb4-24" data-line-number="24"><span class="co">#&gt; [23] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.dbf"         </span></a>
+<a class="sourceLine" id="cb4-25" data-line-number="25"><span class="co">#&gt; [24] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"         </span></a>
+<a class="sourceLine" id="cb4-26" data-line-number="26"><span class="co">#&gt; [25] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shx"         </span></a>
+<a class="sourceLine" id="cb4-27" data-line-number="27"><span class="co">#&gt; [26] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.dbf"                            </span></a>
+<a class="sourceLine" id="cb4-28" data-line-number="28"><span class="co">#&gt; [27] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                            </span></a>
+<a class="sourceLine" id="cb4-29" data-line-number="29"><span class="co">#&gt; [28] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shx"                            </span></a>
+<a class="sourceLine" id="cb4-30" data-line-number="30"><span class="co">#&gt; [29] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.dbf"                        </span></a>
+<a class="sourceLine" id="cb4-31" data-line-number="31"><span class="co">#&gt; [30] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                        </span></a>
+<a class="sourceLine" id="cb4-32" data-line-number="32"><span class="co">#&gt; [31] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shx"                        </span></a>
+<a class="sourceLine" id="cb4-33" data-line-number="33"><span class="co">#&gt; [32] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.dbf"  </span></a>
+<a class="sourceLine" id="cb4-34" data-line-number="34"><span class="co">#&gt; [33] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"  </span></a>
+<a class="sourceLine" id="cb4-35" data-line-number="35"><span class="co">#&gt; [34] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shx"  </span></a>
+<a class="sourceLine" id="cb4-36" data-line-number="36"><span class="co">#&gt; [35] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.dbf"                   </span></a>
+<a class="sourceLine" id="cb4-37" data-line-number="37"><span class="co">#&gt; [36] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                   </span></a>
+<a class="sourceLine" id="cb4-38" data-line-number="38"><span class="co">#&gt; [37] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shx"                   </span></a>
+<a class="sourceLine" id="cb4-39" data-line-number="39"><span class="co">#&gt; [38] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.dbf"                 </span></a>
+<a class="sourceLine" id="cb4-40" data-line-number="40"><span class="co">#&gt; [39] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"                 </span></a>
+<a class="sourceLine" id="cb4-41" data-line-number="41"><span class="co">#&gt; [40] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shx"                 </span></a>
+<a class="sourceLine" id="cb4-42" data-line-number="42"><span class="co">#&gt; [41] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.dbf"                 </span></a>
+<a class="sourceLine" id="cb4-43" data-line-number="43"><span class="co">#&gt; [42] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"                 </span></a>
+<a class="sourceLine" id="cb4-44" data-line-number="44"><span class="co">#&gt; [43] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shx"</span></a></code></pre></div>
+<p>Além do arquivo baixado, que ganhou o nome temporário /tmp/RtmpB3tMyv/file27cf1a2e9a69.zip, todos os arquivos que estavam compactados nele estão presentes, já descompactados.</p>
 <p>É possível fazer buscas mais específicas. Por exemplo, para ver os arquivos <code>.shp</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="co"># listar shapefiles</span></a>
 <a class="sourceLine" id="cb5-2" data-line-number="2"><span class="kw"><a href="../reference/list_tmp.html">list_tmp</a></span>(<span class="st">"shp"</span>)</a>
-<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#&gt;  [1] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"       </span></a>
-<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt;  [2] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                          </span></a>
-<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt;  [3] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                      </span></a>
-<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt;  [4] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a>
-<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;  [5] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                 </span></a>
-<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt;  [6] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"               </span></a>
-<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt;  [7] "/tmp/RtmpizigZK/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"               </span></a>
-<a class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt;  [8] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"         </span></a>
-<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt;  [9] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                            </span></a>
-<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; [10] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                        </span></a>
-<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="co">#&gt; [11] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"  </span></a>
-<a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">#&gt; [12] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                   </span></a>
-<a class="sourceLine" id="cb5-15" data-line-number="15"><span class="co">#&gt; [13] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"                 </span></a>
-<a class="sourceLine" id="cb5-16" data-line-number="16"><span class="co">#&gt; [14] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"</span></a></code></pre></div>
+<a class="sourceLine" id="cb5-3" data-line-number="3"><span class="co">#&gt;  [1] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"       </span></a>
+<a class="sourceLine" id="cb5-4" data-line-number="4"><span class="co">#&gt;  [2] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                          </span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="co">#&gt;  [3] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                      </span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="co">#&gt;  [4] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a>
+<a class="sourceLine" id="cb5-7" data-line-number="7"><span class="co">#&gt;  [5] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                 </span></a>
+<a class="sourceLine" id="cb5-8" data-line-number="8"><span class="co">#&gt;  [6] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"               </span></a>
+<a class="sourceLine" id="cb5-9" data-line-number="9"><span class="co">#&gt;  [7] "/tmp/RtmpB3tMyv/SAD69-96_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"               </span></a>
+<a class="sourceLine" id="cb5-10" data-line-number="10"><span class="co">#&gt;  [8] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"         </span></a>
+<a class="sourceLine" id="cb5-11" data-line-number="11"><span class="co">#&gt;  [9] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_HOSPITAL.shp"                            </span></a>
+<a class="sourceLine" id="cb5-12" data-line-number="12"><span class="co">#&gt; [10] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_SAUDE_MENTAL.shp"                        </span></a>
+<a class="sourceLine" id="cb5-13" data-line-number="13"><span class="co">#&gt; [11] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"  </span></a>
+<a class="sourceLine" id="cb5-14" data-line-number="14"><span class="co">#&gt; [12] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UNIDADES_DST-AIDS.shp"                   </span></a>
+<a class="sourceLine" id="cb5-15" data-line-number="15"><span class="co">#&gt; [13] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_URGENCIA-EMERGENCIA.shp"                 </span></a>
+<a class="sourceLine" id="cb5-16" data-line-number="16"><span class="co">#&gt; [14] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_VIGILANCIA_EM_SAUDE.shp"</span></a></code></pre></div>
 <p>Ou para listar apenas o nome do arquivo e não o seu caminho completo:</p>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="kw"><a href="../reference/list_tmp.html">list_tmp</a></span>(<span class="st">"shp"</span>, <span class="dt">full =</span> <span class="ot">FALSE</span>)</a>
 <a class="sourceLine" id="cb6-2" data-line-number="2"><span class="co">#&gt;  [1] "SAD69-96_SHP_TEMA_-_SAUDE_AMBULATORIOS_ESPECIALIZADOS.shp"       </span></a>
@@ -327,7 +327,7 @@
 <p>Como o meu interesse é apenas no <em>shapefile</em> de UBS, e quero os dados projetados em Sirgas, posso usar expressões regulares e criar um padrão mais específico para extrair apenas o arquivo que desejo importar.</p>
 <div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1">arquivo &lt;-<span class="st"> </span><span class="kw"><a href="../reference/list_tmp.html">list_tmp</a></span>(<span class="st">"SIRGAS*.*UBS*.*shp"</span>)</a>
 <a class="sourceLine" id="cb7-2" data-line-number="2">arquivo</a>
-<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="co">#&gt; [1] "/tmp/RtmpizigZK/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a></code></pre></div>
+<a class="sourceLine" id="cb7-3" data-line-number="3"><span class="co">#&gt; [1] "/tmp/RtmpB3tMyv/SIRGAS_SHP_TEMA_-_SAUDE_UBS-POSTO_DE_SAUDE-CENTRO_DE_SAUDE.shp"</span></a></code></pre></div>
 <p>E então importar:</p>
 <div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" data-line-number="1"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(sf)</a>
 <a class="sourceLine" id="cb8-2" data-line-number="2"><span class="kw"><a href="https://www.rdocumentation.org/packages/base/topics/library">library</a></span>(dplyr)</a>

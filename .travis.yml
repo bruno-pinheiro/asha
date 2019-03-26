@@ -1,14 +1,21 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
-sudo: required
-
 language: r
 cache: packages
+sudo: required
+dist: trusty
 
 before_install:
-  - sudo apt-get install libgdal-dev libgeos-dev libproj-dev libudunits2-dev libv8-dev libprotobuf-dev protobuf-compiler libjq-dev libgit2-dev
+  - sudo add-apt-repository ppa:ubuntugis/ppa --yes
+  - sudo apt-get --yes --force-yes update -qq
+  - sudo apt-get install --yes libudunits2-dev libproj-dev libgeos-dev libgdal-dev
 
-r_packages:
-  - sp
-  - rgdal
-  - rgeos
+warnings_are_errors: true
+
+before_deploy: Rscript -e 'remotes::install_cran("pkgdown");remotes::install_github("ropensci/rotemplate")'
+
+deploy:
+  provider: script
+  script: Rscript -e 'pkgdown::deploy_site_github()'
+  skip_cleanup: true
+

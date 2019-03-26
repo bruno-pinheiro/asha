@@ -1,0 +1,7 @@
+language: r
+
+addons:
+  apt:
+    packages:
+      - libxml2-dev
+      - r-cran-rgdal

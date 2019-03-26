@@ -1,0 +1,427 @@
+---
+title: Construção de indicadores de acessibilidade espacial à saúde com o pacote asha
+author:
+- affiliation: Escola de Artes, Ciências e Humanidades da Universidade de São Paulo
+  email: bruno.pinheiro.oliveira@usp.br
+  name: Bruno Pinheiro^[Estudante do curso de Gestão de Políticas Públicas da EACH/USP]
+- affiliation: Escola de Artes, Ciências e Humanidades da Universidade de São Paulo
+  email: alexandre.leichsenring@usp.br
+  name: Alexandre Ribeiro Leichsenring^[Professor do curso de Gestão de Políticas
+    Públicas da EACH/USP]
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    number_sections: yes
+    toc: yes
+    fontsize: 16
+subtitle: Exemplo a partir do caso da cidade de São Paulo
+bibliography: referencias.bib
+vignette: >
+  %\VignetteIndexEntry{Indicadores de acessibilidade espacial à saúde}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  error = FALSE
+)
+```
+
+# Introdução
+
+bla bla bla...
+
+Cada projeto de dados enfrenta desafios particulates. Fatores como a existência ou não dos dados, se o acesso é público, se os dados são estruturados ou não.
+
+# Objetivos
+
+# Estrutura do pacote e funcionalidade
+
+A instalação do pacote e carregado no ambiente do R conforme indicado a seguir:
+
+# Funcionalidades centrais do `asha`
+
+
+```{r}
+tibble::tribble(
+  ~Family, ~Function,
+  "Obtenção de dados", "`get_zip()`, `get_censo()`",
+  "Estimação de origem-destino", "asha_nn(), asha_intersect()"
+)
+```
+
+
+# Passo 1: Obtenção dos dados
+
+## Dados fundamentais
+
+A construção das medidas de acessibilidade disponíveis no pacote `asha` depende de um conjunto específico de dados a respeito do território, da população e dos serviços de saúde pública.
+
+As bases de dados utilizadas na pesquisa realizada com dados da cidade de São Paulo estão incorporadas ao pacote e podem servir de exemplo para os dados que deverão ser obtidos para viabilizar a modelagem e construção dos indicadores. Para ver todos os dados disponíveis no pacote digite `data(package = "asha")` no console`.
+
+Especificamente, a pesquisa baseou-se nas seguintes bases de dados:
+
+```{r, echo=FALSE}
+library(dplyr)
+tibble::tribble(
+  ~Information, ~Source, ~Period,
+  "Census tracts mesh", "Census 2010 (IBGE)", "2010",
+  "Habitants and income", "Census 1010 aggregated by tracts (IBGE)", "2010",
+  "Location of primary care units", "GEOSAMPA/PMSP; CNES; Google Geocode API", "2015/2016",
+  "Health professionals", "CNES", "sep/2017",
+  "Primary care units coverage mesh", "Information request at SMS/PMSP", "2017",
+  "Distances in length and travel time", "Google Distance Matrix API", "2017"
+  ) %>% knitr::kable(caption = "Characterization of study data, 2010-2017")
+```
+
+Após o *download* dos dados e da realização do pré-processamento foram definidas as seguintes bases de dados chave:
+
+- `setores`: malha de setores censitários
+- `populacao`: habitantes e renda
+- `ubs_pontos`: geolocalização das UBS
+- `ubs_malhas`: malha dos territórios de UBS
+- `prof_saude`: número de médicos e enfermeiros nas unidades de saúde de São Paulo
+
+A base de dados final, resultado da modelagem da estrutura de origem e destino e da construção dos indicadores é a `od_indicadores`, cuja estrutura é apresentada abaixo:
+
+```{r}
+library(asha)
+str(od_indicadores)
+```
+
+## Baixar os dados
+
+Problema
+  : - Garantir replicabilidade da obtenção dos dados para outras unidades territoriais, dada a diversidade de fontes e tipos de dados
+  : - Dados de distâncias e tempos de viagem demandam interação com API's do Google
+
+Limitações
+  : - Dificuldade de obtenção programática de dados do DATASUS/CNES
+  : - Demanda por dados que ou não existem ou não estão ativamente disponíveis para acesso na internet
+
+Soluções
+  : - Efetuar pedidos de acesso à informação
+  : - Obter dados do DATASUS/CNES manualmente
+  : - Estabelecer funções para obter dados do IBGE, para interagir com a Google Distance Matrix API, e para baixar qualquer arquivo comprimido em formato `zip`
+
+### Baixar dados com `get_zip()`
+
+A função mais básica para obtenção de dados do pacote `asha` é a `get_zip()`. Ela é uma simples implementação conjunta das funções `download.file()` e `unzip()` do pacote `utils`, um dos *core R packages*. Portanto, além de baixar qualquer arquivo `.zip` da internet, ela também extrai os arquivos compactados. Além disso, a função dispõe de dois métodos para gerenciamento dos dados baixados.
+
+O método básico é o temporário, caso em que os arquivos são locados no diretório temporário do sistema. O workflow deste método envolve o uso de duas outras funções, também disponibilizadas no pacote `asha`: `list_tmp()` facilita a listagem dos arquivos na pasta temporária, aceitando padrões de busca, inclusive expressões regulares e `clean_tmp()` exclui o diretório temporário, caso seja preciso limpá-lo.
+
+O segundo método é o arquivamento local dos dados. Neste caso, os arquivos são guardados no diretório indicado na função: `get_zip(savedir = "path")` 
+
+No caso particular da investigação, esta função foi usada para obter os pontos geolocalizados das Unidades Básicas de Saúde, *shapefile* disponível no portal [Geosampa](http://geosampa.prefeitura.sp.gov.br/PaginasPublicas/_SBC.aspx).
+
+```{r}
+url_base <- "http://geosampa.prefeitura.sp.gov.br/PaginasPublicas/downloadArquivoOL.aspx?"
+url_arquivo <- "orig=DownloadCamadas&arq=03_Equipamentos%5C%5CSa%FAde%5C%5CShapefile%5C%5CEQUIPAMENTOS_SHP_TEMA_SAUDE&arqTipo=Shapefile"
+url <- paste0(url_base, url_arquivo)
+get_zip(url)
+```
+
+O resultado mostra que os dados foram corretamente baixados. Como não indiquei nenhum diretório de salvamento os dados estão na pasta temporária. Aqui é que entra a função `list_tmp()`. Com ela eu posso listar os arquivos da pasta temporária.
+
+```{r}
+list_tmp()
+```
+
+Além do arquivo baixado, que ganhou o nome temporário `r asha::list_tmp("zip")`, todos os arquivos que estavam compactados nele estão presentes, já descompactados. 
+
+É possível fazer buscas mais específicas. Por exemplo, para ver os arquivos `.shp`:
+
+```{r}
+# listar shapefiles
+list_tmp("shp")
+```
+
+Ou para listar apenas o nome do arquivo e não o seu caminho completo:
+
+```{r}
+list_tmp("shp", full = FALSE)
+```
+
+Como o meu interesse é apenas no *shapefile* de UBS, e quero os dados projetados em Sirgas, posso usar expressões regulares e criar um padrão mais específico para extrair apenas o arquivo que desejo importar.
+
+```{r}
+arquivo <- list_tmp("SIRGAS*.*UBS*.*shp")
+arquivo
+```
+
+E então importar:
+
+```{r}
+library(sf)
+library(dplyr)
+ubs_pontos <- read_sf(arquivo)
+glimpse(ubs_pontos)
+```
+
+Em resumo, o processo de importação deste arquivo, usando o método temporário, teria sido o seguinte:
+
+```r
+# baixar o arquivp
+url_base <- "http://geosampa.prefeitura.sp.gov.br/PaginasPublicas/downloadArquivoOL.aspx?"
+url_arquivo <- "orig=DownloadCamadas&arq=03_Equipamentos%5C%5CSa%FAde%5C%5CShapefile%5C%5CEQUIPAMENTOS_SHP_TEMA_SAUDE&arqTipo=Shapefile"
+url <- paste0(url_base, url_arquivo)
+get_zip(url)
+
+# importar
+ubs_pontos <- read_sf(list_tmp("SIRGAS*.*UBS*.*shp"))
+```
+
+Já usando o método de armazenamento local o processo, seria:
+
+```r
+# baixar o arquivp
+url_base <- "http://geosampa.prefeitura.sp.gov.br/PaginasPublicas/downloadArquivoOL.aspx?"
+url_arquivo <- "orig=DownloadCamadas&arq=03_Equipamentos%5C%5CSa%FAde%5C%5CShapefile%5C%5CEQUIPAMENTOS_SHP_TEMA_SAUDE&arqTipo=Shapefile"
+url <- paste0(url_base, url_arquivo)
+get_zip(url, savedir = "PATH DO ARQUIVO")
+
+# importar
+ubs_pontos <- read_sf("PATH DO ARQUIVO")
+```
+
+### Baixar dados com `get_censo()`
+
+Já a função `get_censo()` é específica. Ela aplica a função `get_zip()` para baixar expecificamente os seguintes dados do Censo 2010:
+
+- Resultados do universo agregados por setor censitário
+- Malhas digitais intramunicipais
+
+Os dados são baixados de ftp://ftp.ibge.gob.br ou ftp://geoftp.ibge.gov.br. O primeiro disponibiliza os dados tabulares das pesquisas realizadas pelo IBGE. O segundo os dados espaciais produzidos pelo órgão, como as malhas digitais dos municípios, dos estados e dos setores censitários.
+
+Dada a dimensão do município de São Paulo, seus arquivos são pesados. Por isto, exemplificarei o uso de `get_censo()` obtendo dados do estado de Roraima.
+
+**Baixar dados tabulares**
+
+```{r}
+# limpar diretório temporário
+# clean_tmp()
+# baixa dados
+get_censo(state = "rr")
+# importar
+file <- list_tmp("Dom*.*Renda*.*RR*.*csv")
+rr_tabular <- data.table::fread(file) %>% tibble::as_tibble()
+glimpse(rr_tabular)
+```
+
+**Baixar dados espaciais**
+
+Para baixar os dados espaciais (a malha de setores censitários), basta adicionar o argumento `mode` na função `getìbge()`.
+
+```{r}
+# baixa dados
+get_censo(state = "rr", datatype = "geo")
+# importar
+file <- list_tmp("SIR.shp")
+rr_geo <- sf::read_sf(file)
+glimpse(rr_geo)
+```
+
+Em qualquer um dos casos basta indicar o código de outra Unidade da Federação para baixar os dados de outro estado. O exemplo abaixo, por exemplo, baixaria os dados tabulares e as malhas de setores censitários de Santa Catarina
+
+```r
+# baixa dados tabulares
+get_censo("sc")
+
+# baixa malha de setores censitários
+get_censo("sc", "geo")
+```
+
+Por fim, a função `get_censo` pode ser usada para baixar outras malhas intramunicipais. Para isto é preciso indicar no argumento `mesh`, aceito quando `datatype = "geo"`, qual delas será obtida. Por padrão a função baixa os setores censitários, mas também aceita os argumentos "distritos", "municipios" e "sub_distritos". Por exemplo, para baixar os distritos de Santa Catarina:
+
+```r
+get_censo("sc", "geo", mesh = "distritos")
+```
+
+O [script de importação dos dados](https://github.com/bruno-pinheiro/asha/blob/master/data-raw/00_get_data_raw.R) utilizados na pesquisa em questão pode servir de exemplo para a obtenção dos dados.
+
+**Obtenção de dados de outras fontes**
+
+Uma informação essencial para a avaliação da acessibilidade do modelo territorial do sistema municipal de atenção básica em saúde é a delimitação territorial da cobertura das UBS. No caso da cidade de São Paulo, a Secretaria Municipal de Saúde dispunha de *shapefiles* utilizados na gestão, porém não disponibilizados à população. Por isto foi necessário impetrar um pedido de acesso à informação no [e-Sic da Prefeitura de São Paulo](http://esic.prefeitura.sp.gov.br/Account/Login.aspx). Além destes, os dados de saúde também foram obtidos manualmente junto ao DATASUS/CNES.
+
+**Obtenção de dados da *Google Distance Matrix API***
+
+Além destes conjuntos de dados já relacionados acima, a metodologia depende da obtenção de dados de rotas (tempos de viagem), para a modelagem da estrutra OD do sistema de atenção básica. Esta é uma das vantagens centrais adotadas na pesquisa e implementada no pacote `asha` por meio da função `asha_dists()`, pois baseia a modelagem espacial no tempo efetivo da rota mais próxima entre os setores censitários e as UBS e não em distâncias euclidianas como muitos trabalhos na área adotam. Isto confere maior consitência aos indicadores espaciais.
+
+Ainda que seja também uma função de obtenção de dados, ela será apresenta mais adiante. Como o objetivo desta vinheta é apresentar a aplicação da metodologia utilizando as funções do pacote `asha` de forma aplicada, esta função será apresentada na explicação sobre a modelagem da estrutura de sistema de atenção básica de saúde, mantendo-a no contexto da sua aplicação.
+
+# Passo 2: Preparação dos dados
+
+Problema
+  : - Existência de variáveis desnecessárias
+  : - Classes de dados não padronizadas
+  : - Nomes das variáveis codificados, dificultando o uso
+  : - Malhas de UBS mais atual que geolocalização de pontos
+  : - Informações desatualizadas e inconsistens do CNES e da Prefeitura a respeito das UBS existentes no município
+  : - Dados mal documentados (metadados e variáveis)
+
+Solução
+  : - Limpeza das variáveis não utilizadas
+  : - Recodificação das variáveis
+  : - Renomeação das variáveis
+  : - Geocodificação de endereços
+
+Após o processo de importação foi realizada a preparação dos dados, antes de proceder com a modelagem da acessibilidade espacial. Como em todo projeto de dados, esta é das mais importantes etapas, pois torna todo o trabalho posterior mais fácil e organizado. Mas é a que mais consome tempo, pois implica conhecer os dados, suas variáveis, a interrelação entre os conjuntos de dados, e definir meios de solucionar problemas que se apresentem no processo cíclico de pre-processamento.
+
+Particularmente, as maiores dificuldades encontradas foram relacionadas à definição das UBS existentes, em função de informações desatualizadas e erros de geolocalização. Isto demandou uma série de explorações nos dados, consulta ao órgão municipal de saúde e cruzamento de informações da Prefeitura e do CNES.
+
+Após a identificação das UBS em atividade aquelas que não existiam na base de pontos, bastou geocodificar As coordenadas espaciais foram obtidas com a [*Google Geocoding API*](https://developers.google.com/maps/documentation/geocoding/intro) por meio da função `geocode` do pacote `ggmap`, que estabelece interface com a API.
+
+A parte computacional deste procedimento é simples:
+
+```{r}
+# separar amostra de enderecos
+enderecos <- ubs_malha$endereco[1:5]
+enderecos
+
+# geolocalizar
+library(ggmap)
+geocode(enderecos)
+```
+
+Depois de finalizado, quando estabelecidas as linhas OD da malha territorial vigente, percebi que havia algumas UBS (15 ao todo) com erros graves de geolocalização. Foi então realizada mais uma rodada de consulta aos endereços destas UBS nos sites da Prefeitura e do CNES para conferência de endereços. Após obtenção dos endereços corretos eles foram geocodificados e os pontos incosistentes corrigidos.
+
+Todo do processo de tratament dos dados está nos scripts presentes podem ser visto [aqui](https://github.com/bruno-pinheiro/asha/tree/master/data-raw). Ao fim, foram geradas as seguintes bases de dados.
+
+```{r}
+rm(list = ls())
+```
+
+## Dados pré-processados
+
+```{r}
+# dados tabulares
+head(populacao)
+```
+
+```{r}
+head(prof_saude)
+```
+
+```{r}
+# dados espaciais
+head(setores)
+```
+
+```{r}
+head(ubs_pontos)
+```
+
+```{r}
+head(ubs_malha)
+```
+
+# Modelagem OD
+
+OD euclidiano
+
+```{r}
+centroides <- st_centroid(setores) %>% select(cd_geocodi)
+od_euclidiano <- asha_nn(ubs_pontos, centroides, "cnes", "cd_geocodi", 5)
+od_euclidiano
+```
+
+Isto sigfica identificar as "n" UBS mais proximas de cada setor censitario. No caso estamos trabalhando com as 5 UBS mais proximas.
+
+```{r}
+# Preparar base de zonas ---------------
+zonas <- asha_zones(centroides, ubs_pontos, "cd_geocodi", "cnes")
+head(zonas)
+tail(zonas)
+```
+
+## Levantar Rotas
+
+O levantamento de dados de rotas consiste na consulta à Google Distance Matrix API para obtenção de dados de rotas (distancia e tempo de viagem) entre as 94765 conexões de origem e destino criadas em `od_euclidiano`.
+
+```{r}
+## Levantar dados de rotas ---------------
+# Esta etapa demora muito. Mais de um dia.
+od_euclidiano_exemplo <- od_euclidiano[1:5, ]
+zonas_exemplo <- zonas %>%
+  filter(id %in% od_euclidiano_exemplo$cnes |
+           id %in% od_euclidiano_exemplo$cd_geocodi)
+
+asha_dists(od_euclidiano_exemplo, zonas_exemplo, api = Sys.getenv("GOOGLEDIST"))
+```
+
+# Gerar os indicadores
+
+```{r}
+## od_indicadores da malha vigente -------------------------------------------------------------
+od_indicadores <- list(vigente = asha::asha_intersect(ubs_malha, centroides, "cnes", "cd_geocodi"))
+
+#' O resultado tem 18948 setores, de 18953. Os cinco nao incluidos
+#' nao estao dentro de nenhuma area de ubs, por diferencas na geometria.
+#' Abaixo incluo diretamente as linhas com os setores ausentes. Busquei
+#' no mapa as UBS correspondentes.
+
+cd_setores <- setores$cd_geocodi[!(setores$cd_geocodi %in% od_indicadores$vigente$cd_geocodi)]
+cd_ubs <- c("3121135", "4049934", "2788039", "2788217", "2788500")
+
+od_indicadores$vigente <- od_indicadores$vigente %>%
+  rbind(tibble::tibble(cd_geocodi = cd_setores, cnes = cd_ubs)) %>%
+  dplyr::mutate(malha = "vigente") %>%
+  tibble::as_tibble()
+
+## od_indicadores da malha experimental --------------------------------------------------------
+od_indicadores$prox <- od_viagens %>%
+  dplyr::group_by(cd_geocodi) %>% 
+  # ha menor tempo com distancia igual
+  dplyr::filter(tempo == min(tempo)) %>%
+  dplyr::filter(distancias == min(distancias)) %>%
+  dplyr::ungroup() %>%
+  dplyr::select(cd_geocodi, cnes) %>%
+  dplyr::mutate(malha = "experimento") %>%
+  tibble::as_tibble()
+
+# Extrair setores ausentes
+cd_setores <- setores$cd_geocodi[!(setores$cd_geocodi %in% od_indicadores$prox$cd_geocodi)]
+od_euclidiano <- asha::asha_nn(ubs_pontos, centroides, "cnes", "cd_geocodi", 5)
+
+# terminar od_indicadores da malha experimental
+od_indicadores$prox <- od_indicadores$prox %>%
+  rbind(od_euclidiano %>%
+          dplyr::filter(proximidade == 1, cd_geocodi %in% cd_setores) %>%
+          dplyr::select(cd_geocodi, cnes) %>%
+          dplyr::mutate(malha = "experimento"))
+
+
+# UNIR BASES od_indicadores ---------------------------------------------------------------
+od_indicadores <- do.call(rbind, od_indicadores) %>%
+  dplyr::mutate(malha = factor(malha, levels = c("vigente", "experimento")))
+
+od_indicadores <- od_indicadores %>%
+  dplyr::left_join(populacao, by = "cd_geocodi") %>%
+  dplyr::left_join(prof_saude, by = "cnes") %>%
+  dplyr::mutate(oportunidades = enfermeiros + medicos,
+         habitantes = tidyr::replace_na(habitantes, 0)) %>%
+  dplyr::group_by(cnes) %>%
+  dplyr::mutate(demanda = sum(habitantes, na.rm = TRUE)) %>%
+  dplyr::ungroup() %>%
+  dplyr::left_join(od_viagens[, c("cnes", "cd_geocodi", "distancias", "tempo")],
+            by = c("cd_geocodi", "cnes")) %>%
+  dplyr::rename(distancia = distancias)
+
+# CALCULAR INDICADORES --------------------------------------------------------
+
+## Acessibilidade viável -------------
+od_indicadores <- asha::asha_av(od_indicadores, cnes, tempo, habitantes, malha, 15)
+
+## Acessibilidade competitiva -------------
+od_indicadores <- asha::asha_ac(od_indicadores, habitantes, cnes, malha, 1000)
+```
+
+```{r}
+head(od_indicadores)
+```
+

@@ -26,7 +26,9 @@ Download and extract tabular data from ftp://ftp.ibge.gov.br/
 \code{get_zip} will download and extract files
 }
 \examples{
-# get_zip()
+\dontrun{
+get_zip()
+}
 
 }
 \author{

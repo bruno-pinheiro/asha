@@ -36,10 +36,12 @@ Converte o CRS do objeto passado em \code{zonas} em lat long (4326) para
          ao inves de todos para todos como o pacote stplanr, reduzindo o consumo da API.
 }
 \examples{
+\dontrun{
 cent <- sf::st_centroid(setores)
 x <- asha_nn(ubs_pontos, setores, "cnes", "cd_geocodi", 1)
 zonas <- asha_zones(cent, ubs_pontos, "cd_geocodi", "cnes")
 asha_dists(x[500:501, ], zonas, "transit")
+}
 
 }
 \seealso{

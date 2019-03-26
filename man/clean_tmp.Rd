@@ -21,7 +21,9 @@ Performs clean operations on temporary directory
          inside \code{tempdir()}.
 }
 \examples{
+\dontrun{
 clean_tmp()
+}
 
 }
 \seealso{

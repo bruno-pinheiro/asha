@@ -32,10 +32,12 @@ A funcao relaciona dois conjuntos de pontos espaciais e identifica os \code{n}
          codigos de identificacao do destino e da origem.
 }
 \examples{
+\dontrun{
 data("ubs_pontos")
 data("setores")
 cent <- sf::st_centroid(setores)
 asha_nn(ubs_pontos, cent, "cnes", "cd_geocodi", 3)
+}
 
 }
 \seealso{

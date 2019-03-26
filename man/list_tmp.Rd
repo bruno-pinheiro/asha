@@ -26,12 +26,13 @@ List files in \code{tempdir()}
          \code{tempdir()}, including nested folders.
 }
 \examples{
-
+\dontrun{
 # to list files in tempdir() root
 list_tmp()
 
 # to list files of an extension
 list_tmp(".zip")
+}
 
 }
 \seealso{

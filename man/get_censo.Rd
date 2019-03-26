@@ -31,8 +31,10 @@ Download and extract census data from IBGE
          informed, will store them in the temporary folder
 }
 \examples{
+\dontrun{
 get_censo("rr")
 clean_tmp()
+}
 
 }
 \author{

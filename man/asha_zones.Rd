@@ -30,8 +30,10 @@ A funcao pega dois objetos espaciais de classe sf, mescla e
          que os dois objetos tenham o mesmo crs definido previamente.
 }
 \examples{
+\dontrun{
 zonas <- asha_zones(sf::st_centroid(setores), ubs_pontos, "cd_geocodi", "cnes")
 str(zonas)
+}
 
 }
 \author{

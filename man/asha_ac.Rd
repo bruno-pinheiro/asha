@@ -34,7 +34,9 @@ Alem das variaveis com numero de habitantes e id de area, que sao passados
          area em cada modelo.
 }
 \examples{
-# asha_ac(df1, pop, area, model)
+\dontrun{
+asha_ac(df1, pop, area, model)
+}
 
 }
 \author{

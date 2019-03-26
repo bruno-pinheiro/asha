@@ -34,7 +34,9 @@ Utiliza as variaveis passadas na funcao para calcular o indicador de acessibilid
          viavel, incluindo a criacao das variaveis de acessibilidade.
 }
 \examples{
-# asha_av(df, id, tempo, pop, raio)
+\dontrun{
+asha_av(df, id, tempo, pop, raio)
+}
 
 }
 \author{

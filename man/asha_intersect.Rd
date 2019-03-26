@@ -29,12 +29,13 @@ A funcao identifica os pontos localizados dentro de cada poligono.
          sf::st_intersect para realizar a intersecao.
 }
 \examples{
+\dontrun{
 data("ubs_malha")
 data("setores")
 asha_intersect(ubs_malha,
                sf::st_centroid(setores),
                "cnes", "cd_geocodi")
-
+}
 }
 \seealso{
 \code{\link[sf]{st_intersects}},

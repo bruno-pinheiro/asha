@@ -57,8 +57,8 @@ get_zip <- function(url, savedir = NULL, junkpaths = TRUE) {
 #' @author Bruno Pinheiro
 #'
 #' @examples
-#' get_censo("rr")
-#' clean_tmp()
+#' # get_censo("rr")
+#' # clean_tmp()
 #'
 #' @export
 get_censo <- function(state,

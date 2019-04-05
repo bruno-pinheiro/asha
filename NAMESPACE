@@ -3,6 +3,7 @@
 export(asha_ac)
 export(asha_av)
 export(asha_dists)
+export(asha_ind_group)
 export(asha_intersect)
 export(asha_nn)
 export(asha_zones)

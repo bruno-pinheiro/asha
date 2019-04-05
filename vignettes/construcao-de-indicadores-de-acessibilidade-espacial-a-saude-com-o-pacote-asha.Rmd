@@ -28,15 +28,30 @@ knitr::opts_chunk$set(
   comment = "#>",
   warning = FALSE,
   message = FALSE,
-  error = FALSE
+  error = FALSE,
+  cache = FALSE
 )
 ```
 
 # Introdução
 
+***
+
 bla bla bla...
 
 Cada projeto de dados enfrenta desafios particulates. Fatores como a existência ou não dos dados, se o acesso é público, se os dados são estruturados ou não.
+
+O problema abordado pela pesquisa foi o da relação entre o sistema municipal de atenção básica de saúde, sua organização territorial e a distribuição espacial da população. A pergunta norteadora central foi "como otimizar a acessibilidade espacial da atenção básica de saúde?". Desta derivaram perguntas secundárias: "como avaliar a acessibilidade espacial da atenção básica de saúde?", "quais os dados necessários, quais os dados existentes e que modelos poderiam ser utilizados?", "dada a definição da metodologia, como viabilizar replicabilidade?", "como lidar com a realidade de que a escassez de recursos imporá barreiras à redistribuição espacial de unidades de saúde?", "como tornar o processo o menos custoso possível na interação com as API's?"
+
+Além das consultas à bibliografia, a resposta a estas perguntas envolveu um conjunto de procedimentos computacionais e estatísticos de complexidades variadas, no caso desta pesquisa realizados no R: manipulação de bases de dados espaciais, rotina de captura de informações espaciais usando as API's do Google, criação de mapas e gráficos, geração de estatísticas descritivas e cálculo de indicadores de acessibilidade espacial.
+
+Ao fim a metodologia foi encapsulada no pacote do R chamado `asha`. A proposta deste artigo é, por meio do relato do processo de investigação, de construção da metodologia e dos indicadores, apresentar de forma prática um exemplo de uso de dados públicos para a construção de uma ferramenta propositiva para o processo de produção de políticas públicas, incluindo os desafios enfrentados e as soluções que permitiram superá-los.
+
+
+> "O Brasil já possui diversos casos práticos de publicação de dados na web: IBGE, Datasus, IPEA, INEP, Portal da Transparência, e muitos outros. Só que esses casos não estão aderentes às premissas dos dados abertos e da reusabilidade dos dados publicados, além de cada um fazer suas publicações em formatos e padrões diferentes." (Miranda, p. 64)
+
+![](imgs/candidates-for-bigdata.png)
+
 
 # Objetivos
 
@@ -48,10 +63,13 @@ A instalação do pacote e carregado no ambiente do R conforme indicado a seguir
 
 
 ```{r}
-tibble::tribble(
-  ~Family, ~Function,
-  "Obtenção de dados", "`get_zip()`, `get_censo()`",
-  "Estimação de origem-destino", "asha_nn(), asha_intersect()"
+knitr::kable(
+  tibble::tribble(
+    ~Family, ~Function,
+    "Obtenção de dados", "`get_zip()`, `get_censo()`",
+    "Estimação de origem-destino", "asha_nn(), asha_intersect()"
+    ),
+  caption = "Funcionalidades do pacote asha"
 )
 ```
 
@@ -350,7 +368,10 @@ od_euclidiano_exemplo <- od_euclidiano[1:5, ]
 zonas_exemplo <- zonas %>%
   filter(id %in% od_euclidiano_exemplo$cnes |
            id %in% od_euclidiano_exemplo$cd_geocodi)
+```
 
+
+```{r}
 asha_dists(od_euclidiano_exemplo, zonas_exemplo, api = Sys.getenv("GOOGLEDIST"))
 ```
 

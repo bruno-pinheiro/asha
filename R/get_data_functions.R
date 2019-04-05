@@ -79,18 +79,25 @@ get_censo <- function(state,
     state <- toupper(state)
 
   } else if (datatype == "geo") {
-
     # construir URL para dados geo (meshs)
     base_url <- "ftp://geoftp.ibge.gov.br/organizacao_do_territorio/malhas_territoriais"
-    dirmeshs <- paste0("malhas_de_setores_censitarios__divisoes_intramunicipais")
-    diryear <- paste0("censo_2010")
-    dirshp <- "setores_censitarios_shp"
-    url <- file.path(base_url, dirmeshs, diryear, dirshp, tolower(state))
-    state <- tolower(state)
-
-  } else {
-    message("Just 'tabular' or 'geo' are accepted as dataype arguments")
-  }
+    if (mesh == "setores"){
+      state <- tolower(state)
+      dirmeshs <- paste0("malhas_de_setores_censitarios__divisoes_intramunicipais")
+      diryear <- paste0("censo_2010")
+      dirshp <- "setores_censitarios_shp"
+      url <- file.path(base_url, dirmeshs, diryear, dirshp, state)
+    } else if (mesh == "municipios"){
+      state <- toupper(state)
+      dirmeshs <- paste0("malhas_municipais/municipio_2018")
+      if (state == "BR"){
+        dirdata <- file.path(dirmeshs, "Brasil/BR")
+      } else {
+        dirdata <- file.path(dirmeshs, "UFs", state)
+      }
+      url <- file.path(base_url, dirdata)
+    }
+  } else {message("Just 'tabular' or 'geo' are accepted as datatype argument")}
 
   # raspar nomes dos arquivos na página
   all_files <- RCurl::getURL(paste0(url, "/"), dirlistonly = TRUE)
@@ -108,8 +115,7 @@ get_censo <- function(state,
   if (datatype == "tabular"){
     down_file <- file.path(url, all_files[grep(paste0("^", state), all_files)])
   } else if (datatype == "geo") {
-    down_file <- file.path(url, all_files[grep(paste0("^", state, "_", mesh), all_files)])
+    down_file <- file.path(url, all_files[grep(paste0("^", tolower(state), "_", mesh), all_files)])
   }
-
   get_zip(url = down_file, savedir = savedir)
 }

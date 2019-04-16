@@ -1,7 +1,7 @@
 # CARREGAR PACOTES --------------------------------------------------------
 library(dplyr)
 library(sf)
-library(asha)
+# library(asha)
 
 data("setores")
 data("ubs_pontos")
@@ -29,39 +29,23 @@ od_euclidiano <- asha_nn(ubs_pontos, centroides, "cnes", "cd_geocodi", 5) %>%
 # setor <- as.matrix(st_coordinates(st_transform(odprox_na$setor[1:3, ], 4326)))
 # ubs <- as.matrix(st_coordinates(st_transform(odprox_na$ubs[1:3, ], 4326)))
 
-asha_dist <- function(from, to, mode, api) {
-  if ("sf" %in% class(from)) {
-    from = as.matrix(st_coordinates(st_transform(from, 4326)))
-    to = as.matrix(st_coordinates(st_transform(to, 4326)))
-  }
+# odvig_na <- list(
+#   setor = od_indicadores %>% filter(is.na(distancia), malha == "vigente") %>%
+#     arrange(cd_geocodi) %>% select(cd_geocodi, cnes) %>%
+#     left_join(as_tibble(centroides), by = "cd_geocodi") %>%
+#     st_sf() %>% st_transform(4326),
+#   ubs = od_indicadores %>%  filter(is.na(distancia), malha == "vigente") %>%
+#     arrange(cd_geocodi) %>% select(cnes) %>%
+#     left_join(as_tibble(ubs_pontos), by = "cnes") %>%
+#     st_sf() %>% st_transform(4326)
+#   )
 
-  dist <- lapply(1:nrow(from), function(i) {
-    from = from[i, ]
-    to = to[i, ]
-    stplanr::dist_google(from = from, to = to, mode = mode, google_api = api)
-    print(i)
-  })
-  dist <- do.call(rbind, dist)
-  return(dist)
-}
+# zonasvig <- asha_zones(odvig_na$setor, distinct(odvig_na$ubs, cnes), "cd_geocodi", "cnes")
+# od_viagens <- asha_dists(odvig_na$setor, zonasvig, modal = "walking")
 
-odvig_na <- list(
-  setor = od_indicadores %>% filter(is.na(distancia), malha == "vigente") %>%
-    arrange(cd_geocodi) %>% select(cd_geocodi, cnes) %>%
-    left_join(as_tibble(centroides), by = "cd_geocodi") %>%
-    st_sf() %>% st_transform(4326),
-  ubs = od_indicadores %>%  filter(is.na(distancia), malha == "vigente") %>%
-    arrange(cd_geocodi) %>% select(cnes) %>%
-    left_join(as_tibble(ubs_pontos), by = "cnes") %>%
-    st_sf() %>% st_transform(4326)
-  )
-
-zonasvig <- asha_zones(odvig_na$setor, distinct(odvig_na$ubs, cnes), "cd_geocodi", "cnes")
-od_viagens <- asha_dists(odvig_na$setor, zonasvig, modal = "walking")
-
-od_viagens_na <- as_tibble(odvig_na$setor) %>%
-  select(-geometry) %>%
-  cbind(od_viagens)
+# od_viagens_na <- as_tibble(odvig_na$setor) %>%
+#   select(-geometry) %>%
+#   cbind(od_viagens)
 
 # LEVANTAR ROTAS --------------------------------------------------------------
 # O levantamento de dados de rotas consiste na consulta à Google Distance
@@ -73,17 +57,11 @@ zonas <- asha_zones(centroides, ubs_pontos, "cd_geocodi", "cnes")
 
 ## Levantar dados de rotas ---------------
 # Esta etapa demora muito. Mais de um dia.
-od_viagens <- asha_dists(od_euclidiano, zonas, modal = "walking")
-
-
-
-
+# od_viagens <- asha_dists(od_euclidiano, zonas, modal = "walking")
 
 ## Renomear as varíávies
 od_viagens <- od_viagens %>%
-  rename(cd_geocodi = code_o,
-         cnes = code_d,
-         de = from_addresses,
+  rename(de = from_addresses,
          para = to_addresses,
          distancias = distances,
          tempo = duration,
@@ -91,5 +69,24 @@ od_viagens <- od_viagens %>%
          dx = tx, dy = ty) %>%
   select(-currency, -fare)
 
+# Ranquear distâncias euclidianas
+od_viagens <- od_viagens %>%
+  select(-(ox:dy)) %>%
+  arrange(cd_geocodi, tempo) %>%
+  group_by(cd_geocodi) %>%
+  mutate(rank = rank(tempo, ties.method = "first")) %>%
+  ungroup()
+save(od_viagens2, file = "inst/extdata/dists_erros_setores.rda")
+
+load("inst/extdata/dists_erros_setores.rda")
+
+od_viagens <- od_viagens %>%
+  filter(rank > 2) %>%
+  bind_rows(
+    od_viagens %>%
+      filter(rank == 1 | rank == 2, !(cd_geocodi %in% dists_erros_setores$cd_geocodi)) %>%
+      bind_rows(rename(dists_erros_setores, rank = proximidade) %>% select(names(od_viagens)))
+    )
+
 # SALVAR ----------------------------------------------------------------------
-usethis::use_data(od_viagens)
+usethis::use_data(od_viagens, overwrite = TRUE)

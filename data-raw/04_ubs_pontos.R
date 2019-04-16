@@ -1,3 +1,7 @@
+library(dplyr)
+library(sf)
+library(ggmap)
+
 # IMPORTAR OS DADOS -----------------------------------------------------------
 file <- system.file("extdata", "ubs_pontos-raw.rda", package = "asha")
 load(file)
@@ -19,7 +23,7 @@ diferencas <- list(
 diferencas$antigas <- filter(ubs_pontos, !(cnes %in% diferencas$fechadas$cnes))
 
 ## GEOCOLOCALIZAR NOVAS UBS ---------------------------------------------------
-diferencas$novas_geocode <- ggmap::geocode(diferencas$novas$endereco)
+diferencas$novas_geocode <- geocode(diferencas$novas$endereco)
 
 diferencas$novas <- diferencas$novas_geocode %>%
   st_as_sf(coords = c("lon", "lat")) %>%
@@ -52,10 +56,9 @@ erros <- list(
       "R. Benedito Schunck, 8 - Emburá, São Paulo - SP, 04893-050",
       "AMA CHÁCARA CRUZEIRO DO SUL - Rua Mercedes Lopes - Vila Santana, São Paulo - SP",
       "R. Francisco de Sáles, 10 - Jardim das Palmas, São Paulo - SP, 05749-280",
-      "UBS Barragem, São Paulo - SP",
+      "UBS Barragem - Estrada Evangelista de Souza - Barragem, São Paulo - SP",
       "UBS MARSILAC - Estrada Engenheiro Marsilac - Emburá, São Paulo - SP")
 )
-
 
 erros$geocode <- ggmap::geocode(erros$endereco)
 erros$corrigidos <- erros$geocode %>%
@@ -67,21 +70,11 @@ erros$corrigidos <- erros$geocode %>%
   dplyr::select(cnes)
 erros$check <- dplyr::filter(ubs_pontos, cnes %in% erros$cnes)
 
-# u <- filter(ubs_malha, cnes %in% erros$corrigidos$cnes)
-# leaflet::leaflet(options = leaflet::leafletOptions(preferCanvas = TRUE)) %>%
-#   leaflet::addTiles() %>%
-#   leaflet::addPolygons(data = st_transform(u, 4326),
-#                        label = ~ htmltools::htmlEscape(cnes)) %>%
-#   leaflet::addCircleMarkers(data = st_transform(erros$check, 4326),
-#                             color = "red", label = ~ htmltools::htmlEscape(cnes)) %>%
-#   leaflet::addCircleMarkers(data = st_transform(erros$corrigidos, 4326),
-#                             color = "green", label = ~ htmltools::htmlEscape(cnes))
-
 ubs_pontos <- ubs_pontos %>%
   dplyr::filter(!(cnes %in% erros$corrigidos$cnes)) %>%
   rbind(erros$corrigidos)
 
 # EXPORTAR OS DADOS -----------------------------------------------------------
-usethis::use_data(ubs_pontos)
+usethis::use_data(ubs_pontos, overwrite = TRUE)
 
 rm(list = ls())

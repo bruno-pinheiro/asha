@@ -92,11 +92,12 @@ ubs_prox_na <- ubs_pontos %>%
 
 zonas_na <- asha_zones(centroides_na_prox, ubs_prox_na, "cd_geocodi", "cnes")
 
-dists_prox_na <- asha_dists(od_na$proximidade, zonas_na)
+dists_prox_na <- asha_dists(od_na$proximidade, zonas_na, api = "AIzaSyBRPrAjSE_pRMWSq_XlO4BFwGD63j_gB4U")
 
 dists_na <- list(vigente = as_tibble(dists_vig_na),
                  proximidade = as_tibble(dists_prox_na))
 
+save(dists_na, file = "inst/extdata/dists_erros_na.rda")
 ## Unir colunas com nova rodada de busca de distâncias e tempos
 
 od_na$vigente <- od_na$vigente %>%
@@ -153,26 +154,27 @@ od_indicadores <- od_indicadores %>%
 ## Acessibilidade viável -------------
 od_indicadores <- asha::asha_av(od_indicadores, cnes, tempo, habitantes, malha, 15)
 
-od_indicadores$av <- ifelse(od_indicadores$tempo / 60 <= 15, "Sim", "Nao")
-
-avs <- od_indicadores %>%
-  filter(!is.na(av)) %>%
-  group_by(cnes, malha, av) %>%
-  summarise(pop = sum(habitantes, na.rm = TRUE)) %>%
-  ungroup(cnes, malha, av) %>%
-  mutate(av_prop = prop.table(pop)) %>%
-  filter(av == "Sim") %>%
-  select(-pop) %>%
-  bind_rows(tribble(
-    ~cnes, ~malha, ~av, ~av_prop,
-    "6332471", "Vigente", "Sim", 0,
-    "2786990", "Vigente", "Sim", 0,
-    "2786990", "Proximidade", "Sim", 0
-    ) %>% mutate(malha = factor(malha, levels = c("Vigente", "Proximidade"))))
-
 od_indicadores <- od_indicadores %>%
-  select(-av_prop) %>%
-  left_join(select(avs, -av), by = c("cnes", "malha"))
+  mutate(av_prop = if_else(is.na(av_prop), 0, av_prop))
+
+# od_indicadores %>%
+#   filter(!is.na(av)) %>%
+#   group_by(cnes, malha, av) %>%
+#   summarise(pop = sum(habitantes, na.rm = TRUE)) %>%
+#   group_by(malha, av) %>%
+#   mutate(av_prop = pop / sum(pop))
+#   filter(av == "Sim")
+#   select(-pop) %>%
+#   bind_rows(tribble(
+#     ~cnes, ~malha, ~av, ~av_prop,
+#     "6332471", "Vigente", "Sim", 0,
+#     "2786990", "Vigente", "Sim", 0,
+#     "2786990", "Proximidade", "Sim", 0
+#     ) %>% mutate(malha = factor(malha, levels = c("Vigente", "Proximidade"))))
+
+# od_indicadores <- od_indicadores %>%
+#   select(-av_prop) %>%
+#   left_join(select(avs, -av), by = c("cnes", "malha"))
 
 od_indicadores$renda_domicilios <- as.numeric(od_indicadores$renda_domicilios)
 

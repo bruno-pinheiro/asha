@@ -76,16 +76,13 @@ od_viagens <- od_viagens %>%
   group_by(cd_geocodi) %>%
   mutate(rank = rank(tempo, ties.method = "first")) %>%
   ungroup()
-save(od_viagens2, file = "inst/extdata/dists_erros_setores.rda")
-
-load("inst/extdata/dists_erros_setores.rda")
 
 od_viagens <- od_viagens %>%
   filter(rank > 2) %>%
   bind_rows(
     od_viagens %>%
-      filter(rank == 1 | rank == 2, !(cd_geocodi %in% dists_erros_setores$cd_geocodi)) %>%
-      bind_rows(rename(dists_erros_setores, rank = proximidade) %>% select(names(od_viagens)))
+      filter(rank < 3, !(cd_geocodi %in% dists_erros_setores$cd_geocodi)) %>%
+      bind_rows(rename(dists_erros_setores) %>% select(names(od_viagens)))
     )
 
 # SALVAR ----------------------------------------------------------------------

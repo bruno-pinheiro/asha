@@ -159,13 +159,8 @@ vars <- names(od_indicadores)
 
 ## Acessibilidade competitiva -------------
 od_indicadores <- asha::asha_ac(od_indicadores, habitantes, cnes, malha, 1000)
-od_indicadores2 <- od_indicadores
-# SALVAR ----------------------------------------------------------------------
 
+# SALVAR ----------------------------------------------------------------------
 usethis::use_data(od_indicadores, overwrite = TRUE)
 
 rm(list = ls())
-
-
-
-od_indicadores

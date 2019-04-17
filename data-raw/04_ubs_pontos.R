@@ -43,7 +43,7 @@ erros <- list(
       3762831, 4050223, 5731143, 6018912, 6194990, 6329527, 6332420, 6332471)
   ),
   endereco =
-    c("R. Lajedo, 123 - Cidade Tiradentes, São Paulo - SP",
+    c(" UBS Jardim Vitoria R. Lajedo, 123 - Cidade Tiradentes, São Paulo - SP",
       "Av. Edu Chaves, 1197 - Parque Edu Chaves, São Paulo - SP",
       "R. Frei Fidelis Mota, 1001 – Parque Cruzeiro do Sul, São Paulo - SP",
       "R. Humberto de Almeida, 279, Chacara Santana, São Paulo - SP",

@@ -92,7 +92,7 @@ ubs_prox_na <- ubs_pontos %>%
 
 zonas_na <- asha_zones(centroides_na_prox, ubs_prox_na, "cd_geocodi", "cnes")
 
-dists_prox_na <- asha_dists(od_na$proximidade, zonas_na, api = "AIzaSyBRPrAjSE_pRMWSq_XlO4BFwGD63j_gB4U")
+dists_prox_na <- asha_dists(od_na$proximidade, zonas_na, api = Sys.getenv("DISTGOOGLE"))
 
 dists_na <- list(vigente = as_tibble(dists_vig_na),
                  proximidade = as_tibble(dists_prox_na))

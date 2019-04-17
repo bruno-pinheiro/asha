@@ -50,7 +50,7 @@ erros <- list(
       "Tv. Somos Todos Iguais, 915 - Jardim da Conquista, São Paulo - SP",
       "UBS Vera Poty, São Paulo",
       "R. Rolando Curti, 701 - Vila Clara, São Paulo - SP, 04413-070",
-      "UBS Vila Calu",
+      "UBS Vila Calú - Estrada do M'Boi Mirim - Vila Calu, São Paulo - SP",
       "UBS Parque do Largo - Estrada da Baronesa. 1000, Parque do Lago, São Paulo - SP",
       "Rua Catarina Gabrielli, 236 - Americanópolis, São Paulo - SP",
       "R. Benedito Schunck, 8 - Emburá, São Paulo - SP, 04893-050",
